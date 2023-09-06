@@ -7,7 +7,7 @@
 let
   sbtix = pkgs.callPackage ./sbtix.nix {};
 in
-  sbtix.buildSbtProgram {
+  sbtix.buildSbtLibrary {
     name = "avro4s";
     src = cleanSource ./.;
     #sbtixBuildInputs = pkgs.callPackage ./sbtix-build-inputs.nix {};
