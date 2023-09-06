@@ -17,7 +17,6 @@ lazy val root = Project("avro4s", file("."))
   )
 
 val `avro4s-core` = project.in(file("avro4s-core"))
-  .enablePlugins(JavaAppPackaging)
   .settings(
     scalacOptions += "-Yretain-trees",
     publishArtifact := true,
@@ -28,7 +27,6 @@ val `avro4s-core` = project.in(file("avro4s-core"))
   )
 
 val `avro4s-cats` = project.in(file("avro4s-cats"))
-  .enablePlugins(JavaAppPackaging)
   .dependsOn(`avro4s-core`)
   .settings(
     publishArtifact := true,
