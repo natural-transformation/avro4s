@@ -8,6 +8,7 @@ import org.apache.avro.{Schema, SchemaBuilder}
 import scala.jdk.CollectionConverters._
 import org.apache.avro.JsonProperties
 import com.sksamuel.avro4s.{CustomUnionDefault, CustomEnumDefault, CustomUnionWithEnumDefault}
+import com.sksamuel.avro4s.CustomDefaults.UserConvertedValue
 
 object Records:
 
@@ -50,7 +51,8 @@ object Records:
                                   //                                                        fieldMapper: FieldMapper,
                                   valueTypeDoc: Option[String]): Schema.Field = {
 
-    val baseSchema = param.typeclass.schema
+    val schemaFor = param.typeclass
+    val baseSchema = schemaFor.schema
 
     val name = fieldAnnos.name.getOrElse(param.label)
     val doc = fieldAnnos.doc.orElse(valueTypeDoc).orNull
@@ -66,7 +68,10 @@ object Records:
       SchemaBuilder.fixed(name).doc(doc).namespace(fieldNamespace).size(size)
     }
 
-    val default: Option[AnyRef] = if (fieldAnnos.nodefault) None else param.default.asInstanceOf[Option[AnyRef]]
+    lazy val defaultFromCode = param.default
+    lazy val converteddefaultFromCode = schemaFor.defaultValueConverter.fold(defaultFromCode)(f => defaultFromCode.map(d =>UserConvertedValue(f(d))))
+
+    val default = if (fieldAnnos.nodefault) None else converteddefaultFromCode
 
     // if our default value is null, then we should change the type to be nullable even if we didn't use option
     val schemaWithPossibleNull = if (default.contains(null) && schema.getType != Schema.Type.UNION) {
@@ -75,10 +80,11 @@ object Records:
 
     // the default value may be none, in which case it was not defined, or Some(null), in which case it was defined
     // and set to null, or something else, in which case it's a non null value
-    val encodedDefault: AnyRef = default match {
+    val encodedDefault = default match {
       case None => null
       case Some(None) => JsonProperties.NULL_VALUE
       case Some(null) => JsonProperties.NULL_VALUE
+      case Some(UserConvertedValue(jsonNode)) => UserConvertedValue(jsonNode)
       case Some(other) => DefaultResolver(other, baseSchema)
     }
 
@@ -116,6 +122,7 @@ object Records:
       case CustomEnumDefault(m) =>
         new Schema.Field(name, schemaWithResolvedError, doc, m)
       case CustomUnionWithEnumDefault(_, _, m) => new Schema.Field(name, schemaWithResolvedError, doc, m)
+      case UserConvertedValue(jsonNode) => new Schema.Field(name, schemaWithResolvedError, doc, jsonNode)
       case _                                   => new Schema.Field(name, schemaWithResolvedError, doc, encodedDefault)
     }
 

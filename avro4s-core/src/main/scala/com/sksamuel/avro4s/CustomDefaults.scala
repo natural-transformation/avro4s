@@ -68,6 +68,8 @@ object CustomDefaults {
    case _ => instant.toEpochMilli()
  }
 
+ case class UserConvertedValue(value: AnyRef)
+
  private def isEnum(product: Product, schemaType: Schema.Type) =
    product.productArity == 0 && schemaType == Schema.Type.ENUM
 
