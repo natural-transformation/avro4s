@@ -1,9 +1,8 @@
 package com.sksamuel.avro4s
 
-import _root_.cats.data.NonEmptyList
-import _root_.cats.data.NonEmptyVector
-import _root_.cats.data.NonEmptyChain
+import _root_.cats.data.{NonEmptyList, NonEmptyVector, NonEmptyChain, Validated}
 import org.apache.avro.Schema
+import com.sksamuel.avro4s.avroutils.SchemaHelper
 
 import scala.language.implicitConversions
 
@@ -74,3 +73,53 @@ package object cats:
         }
       }
     }
+
+  given[E, T](using leftSchemaFor: SchemaFor[E], rightSchemaFor: SchemaFor[T]): SchemaFor[Validated[E, T]] = 
+    new SchemaFor[Validated[E, T]]:
+      override def schema = SchemaFor(SchemaHelper.createSafeUnion(leftSchemaFor.schema, rightSchemaFor.schema)).schema
+
+  given[E, T](using leftEncoder: Encoder[E], rightEncoder: Encoder[T]): Encoder[Validated[E, T]] = 
+    new Encoder[Validated[E, T]]:
+      override def encode(schema: Schema): Validated[E, T] => Any = {
+        require(schema.getType == Schema.Type.UNION)
+        val leftSchema = SchemaHelper.extractEitherLeftSchema(schema, "cats.data.Validated")
+        val rightSchema = SchemaHelper.extractEitherRightSchema(schema, "cats.data.Validated")
+        val encodeLeft = leftEncoder.encode(leftSchema)
+        val encodeRight = rightEncoder.encode(rightSchema)
+        { value =>
+          value match {
+            case Validated.Invalid(e) => encodeLeft(e)
+            case Validated.Valid(t) => encodeRight(t)
+          }
+        }
+      }
+
+
+  given[E, T](using leftDecoder: Decoder[E], leftGuard: TypeGuardedDecoding[E], rightDecoder: Decoder[T], rightGuard: TypeGuardedDecoding[T]): Decoder[Validated[E, T]] = 
+    new Decoder[Validated[E, T]]:
+      override def decode(schema: Schema): Any => Validated[E, T] = {
+        require(schema.getType == Schema.Type.UNION)
+        
+        val leftSchema = SchemaHelper.extractEitherLeftSchema(schema, "cats.data.Validated")
+        val rightSchema = SchemaHelper.extractEitherRightSchema(schema, "cats.data.Validated")
+        
+        val decodeLeft = leftDecoder.decode(leftSchema)
+        val decodeRight = rightDecoder.decode(rightSchema)
+
+        val leftP: PartialFunction[Any, Boolean] = leftGuard.guard(leftSchema)
+        val rightP: PartialFunction[Any, Boolean] = rightGuard.guard(rightSchema)
+
+        // how do we know whether the incoming value should be decoded to a a left or a right ?
+        // we can compare types for primitives, and if a record we can compare schemas
+        { value =>
+          if (leftP.isDefinedAt(value)) {
+            Validated.Invalid(decodeLeft(value))
+          } else if (rightP.isDefinedAt(value)) {
+            Validated.Valid(decodeRight(value))
+          } else {
+            val nameL = leftSchema.getFullName
+            val nameR = rightSchema.getFullName
+            throw new Avro4sDecodingException(s"Could not decode $value into cats.data.Validated[$nameL, $nameR]", value)
+          }
+        }
+      } 

@@ -31,8 +31,7 @@ val `avro4s-cats` = project.in(file("avro4s-cats"))
   .settings(
     publishArtifact := true,
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-core" % CatsVersion,
-      "org.typelevel" %% "cats-jvm" % CatsVersion
+      "org.typelevel" %% "cats-core" % CatsVersion
     )
   )
 
