@@ -69,32 +69,47 @@ object SchemaHelper {
   }
 
   /**
-    * Throws if the given schema is not suitable for use in an either.
-    */
-  def validateEitherSchema(schema: Schema, typeNameToUse: String = "Either"): Unit = {
+  * Throws if the given schema is not suitable for use in a union of two.
+  */
+  def validateUnionOfTwoSchema(schema: Schema, typeName: String): Unit = {
     if (schema.getType != Schema.Type.UNION)
       throw new Avro4sConfigurationException(
-        s"Schema type for $typeNameToUse encoders / decoders must be UNION, received $schema")
+        s"Schema type for $typeName encoders / decoders must be UNION, received $schema")
     if (schema.getTypes.size() != 2)
       throw new Avro4sConfigurationException(
-        s"Schema for $typeNameToUse encoders / decoders must be a UNION of to types, received $schema")
+        s"Schema for $typeName encoders / decoders must be a UNION of two types, received $schema")
   }
 
   /**
-    * Returns the subschema used for a Left in an Either.
+    * Returns the subschema used for a value of the first type in a union of two.
     */
-  def extractEitherLeftSchema(schema: Schema, typeNameToUse: String = "Either"): Schema = {
-    validateEitherSchema(schema, typeNameToUse)
+  def getFirstFromUnionOfTwo(schema: Schema, typeName: String): Schema = {
+    validateUnionOfTwoSchema(schema, typeName)
     schema.getTypes.get(0)
   }
 
   /**
-    * Returns the subschema used for a Right in an Either.
+    * Returns the subschema used for a value of the second type in a union of two.
     */
-  def extractEitherRightSchema(schema: Schema, typeNameToUse: String = "Either"): Schema = {
-    validateEitherSchema(schema, typeNameToUse)
+  def getSecondFromUnionOfTwo(schema: Schema, typeName: String): Schema = {
+    validateUnionOfTwoSchema(schema, typeName)
     schema.getTypes.get(1)
   }
+
+  /**
+    * Throws if the given schema is not suitable for use in an either.
+    */
+  def validateEitherSchema(schema: Schema): Unit = validateUnionOfTwoSchema(schema, "Either")
+
+  /**
+    * Returns the subschema used for a Left in an Either.
+    */
+  def extractEitherLeftSchema(schema: Schema): Schema = getFirstFromUnionOfTwo(schema, "Either")
+
+  /**
+    * Returns the subschema used for a Right in an Either.
+    */
+  def extractEitherRightSchema(schema: Schema): Schema = getSecondFromUnionOfTwo(schema, "Either")
 
   /**
     * Requires a UNION schema and will attempt to find a subschema that
