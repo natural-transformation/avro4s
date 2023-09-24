@@ -78,12 +78,15 @@ package object cats:
       }
     }
 
+  extension (name: String)
+    def removeSpecialCharacters: String = name.replace('$', '.').replace(".", "_")
+
   given [E, T] (using eSchemaFor: SchemaFor[E], eClassTag: ClassTag[E], tSchemaFor: SchemaFor[T], tClassTag: ClassTag[T]): SchemaFor[Validated[E, T]] = 
-    val schemaNameforInvalid = s"InvalidWrapper__${eClassTag}".replace(".", "_")
+    val schemaNameforInvalid = s"InvalidWrapper__${eClassTag}".removeSpecialCharacters
     val schemaForInvalid = Schema.createRecord(name = schemaNameforInvalid, doc = null, namespace = "com.sksamuel.avro4s.cats", isError = false)
     schemaForInvalid.setFields(Seq(new Schema.Field("value", eSchemaFor.schema)).asJava)
 
-    val schemaNameforValid = s"ValidWrapper__${tClassTag}".replace(".", "_")
+    val schemaNameforValid = s"ValidWrapper__${tClassTag}".removeSpecialCharacters
     val schemaForValid = Schema.createRecord(name = schemaNameforValid, doc = null, namespace = "com.sksamuel.avro4s.cats", isError = false)
     schemaForValid.setFields(Seq(new Schema.Field("value", tSchemaFor.schema)).asJava)
     SchemaFor(
