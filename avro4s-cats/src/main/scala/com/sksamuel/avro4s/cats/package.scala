@@ -5,6 +5,7 @@ import org.apache.avro.Schema
 import com.sksamuel.avro4s.avroutils.SchemaHelper
 import com.sksamuel.avro4s.ImmutableRecord
 import scala.language.implicitConversions
+import org.apache.avro.generic.GenericContainer
 
 package object cats:
 
@@ -117,10 +118,10 @@ package object cats:
 
         value => {
           value match {
-            case ImmutableRecord(`invalidSchema`, _) => 
+            case v: GenericContainer if v.getSchema.getName.startsWith("InvalidWrapper") => 
               val InvalidWrapper(e) = invalidDecoder(value)
               Validated.Invalid(e)
-            case ImmutableRecord(`validSchema`, _) => 
+            case v: GenericContainer if v.getSchema.getName.startsWith("ValidWrapper") =>  
               val ValidWrapper(t) = validDecoder(value)
               Validated.Valid(t)
             case _ =>
