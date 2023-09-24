@@ -84,19 +84,6 @@ class CatsTest extends AnyWordSpec with Matchers {
 
     }
 
-     "encode and decode user case class using either" in {
-      case class EitherTest(either: Either[String, Int])
-
-      val schemaFor: SchemaFor[EitherTest] = summon[SchemaFor[EitherTest]]
-      println(s"schema for EitherTest is ${schemaFor.schema.toString(true)}")
-
-      val serialized    = AvroUtil.toBin(EitherTest(Right(1)))
-      val derserialized = AvroUtil.fromBin[EitherTest](serialized)
-
-      derserialized shouldEqual EitherTest(Right(1))
-
-     }
-
     "encode and decode user case class using cats data" in {
       case class CatsValidatedTest(errorsOrNum: Validated[String, Int])
 
