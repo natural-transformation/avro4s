@@ -85,15 +85,15 @@ class CatsTest extends AnyWordSpec with Matchers {
     }
 
     "encode and decode user case class using cats data" in {
-      case class CatsValidatedTest(errorsOrNum: Validated[String, Int])
+      case class CatsValidatedTest(errorsOrNum: Validated[String, Int], errorsOrString: ValidatedNel[String, String])
 
       val schemaFor: SchemaFor[CatsValidatedTest] = summon[SchemaFor[CatsValidatedTest]]
       println(s"schema for CatsValidatedTest is ${schemaFor.schema.toString(true)}")
 
-      val serialized    = AvroUtil.toBin(CatsValidatedTest(Validated.Invalid("error1")))
+      val serialized    = AvroUtil.toBin(CatsValidatedTest(Validated.Invalid("error1"), Validated.Valid("hi")))
       val derserialized = AvroUtil.fromBin[CatsValidatedTest](serialized)
 
-      derserialized shouldEqual CatsValidatedTest(Validated.Invalid("error1"))
+      derserialized shouldEqual CatsValidatedTest(Validated.Invalid("error1"), Validated.Valid("hi"))
     }
     
   }

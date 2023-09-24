@@ -6,6 +6,9 @@ import com.sksamuel.avro4s.avroutils.SchemaHelper
 import com.sksamuel.avro4s.ImmutableRecord
 import scala.language.implicitConversions
 import org.apache.avro.generic.GenericContainer
+import scala.reflect.ClassTag
+import org.apache.avro.generic.GenericData
+import org.apache.avro.generic.GenericRecord
 
 package object cats:
 
@@ -75,58 +78,61 @@ package object cats:
       }
     }
 
-  case class InvalidWrapper[E](value: E)
-  case class ValidWrapper[T](value: T)
+  given [E, T] (using eSchemaFor: SchemaFor[E], eClassTag: ClassTag[E], tSchemaFor: SchemaFor[T], tClassTag: ClassTag[T]): SchemaFor[Validated[E, T]] = 
+    val schemaNameforInvalid = s"InvalidWrapper__${eClassTag}".replace(".", "_")
+    val schemaForInvalid = Schema.createRecord(name = schemaNameforInvalid, doc = null, namespace = "com.sksamuel.avro4s.cats", isError = false)
+    schemaForInvalid.setFields(Seq(new Schema.Field("value", eSchemaFor.schema)).asJava)
 
-  given[E: SchemaFor, T: SchemaFor]: SchemaFor[Validated[E, T]] = 
+    val schemaNameforValid = s"ValidWrapper__${tClassTag}".replace(".", "_")
+    val schemaForValid = Schema.createRecord(name = schemaNameforValid, doc = null, namespace = "com.sksamuel.avro4s.cats", isError = false)
+    schemaForValid.setFields(Seq(new Schema.Field("value", tSchemaFor.schema)).asJava)
     SchemaFor(
       Schema.createUnion(
         List(
-          SchemaFor[InvalidWrapper[E]].schema,
-          SchemaFor[ValidWrapper[T]].schema
+          schemaForInvalid,
+          schemaForValid
         ).asJava
       )
     )
 
-  given[E: Encoder, T: Encoder]: Encoder[Validated[E, T]] = 
+  given [E, T] (using eEncoder: Encoder[E], eSchemaFor: SchemaFor[E], tEncoder: Encoder[T], tSchemaFor: SchemaFor[T]): Encoder[Validated[E, T]] = 
     new Encoder[Validated[E, T]] {
       override def encode(schema: Schema): Validated[E, T] => Any = {
         require(schema.getType == Schema.Type.UNION)
         val invalidSchema = SchemaHelper.getFirstFromUnionOfTwo(schema, "InvalidWrapper")
         val validSchema = SchemaHelper.getSecondFromUnionOfTwo(schema, "ValidWrapper")
         
-        val invalidEncoder = Encoder[InvalidWrapper[E]].encode(invalidSchema)
-        val validEncoder = Encoder[ValidWrapper[T]].encode(validSchema)
-        
         {
-          case Validated.Invalid(e) => invalidEncoder(InvalidWrapper(e))
-          case Validated.Valid(t) => validEncoder(ValidWrapper(t))
+          case Validated.Invalid(e) => 
+            val recordForInvalid = GenericData.Record(invalidSchema)
+            val encodeE = eEncoder.encode(eSchemaFor.schema)
+            recordForInvalid.put("value", encodeE.apply(e))
+            recordForInvalid
+          case Validated.Valid(t) => 
+            val recordForValid = GenericData.Record(validSchema)
+            val encodeT = tEncoder.encode(tSchemaFor.schema)
+            recordForValid.put("value", encodeT.apply(t))
+            recordForValid
         }
       }
     }
 
-  given[E: Decoder, T: Decoder]: Decoder[Validated[E, T]] = 
+  given [E, T] (using eClassTag: ClassTag[E], eDecoder: Decoder[E], eSchemaFor: SchemaFor[E], tClassTag: ClassTag[T], tDecoder: Decoder[T], tSchemaFor: SchemaFor[T]): Decoder[Validated[E, T]] = 
     new Decoder[Validated[E, T]] {
       override def decode(schema: Schema): Any => Validated[E, T] = {
         require(schema.getType == Schema.Type.UNION)
 
-        val invalidSchema = SchemaHelper.getFirstFromUnionOfTwo(schema, "InvalidWrapper")
-        val validSchema = SchemaHelper.getSecondFromUnionOfTwo(schema, "ValidWrapper")
-
-        val invalidDecoder = Decoder[InvalidWrapper[E]].decode(invalidSchema)
-        val validDecoder = Decoder[ValidWrapper[T]].decode(validSchema)
-
         value => {
           value match {
             case v: GenericContainer if v.getSchema.getName.startsWith("InvalidWrapper") => 
-              val InvalidWrapper(e) = invalidDecoder(value)
-              Validated.Invalid(e)
+              val invalidValue = v.asInstanceOf[GenericRecord].get("value")
+              Validated.Invalid(eDecoder.decode(eSchemaFor.schema)(invalidValue))
             case v: GenericContainer if v.getSchema.getName.startsWith("ValidWrapper") =>  
-              val ValidWrapper(t) = validDecoder(value)
-              Validated.Valid(t)
+              val validValue = v.asInstanceOf[GenericRecord].get("value")
+              Validated.Valid(tDecoder.decode(tSchemaFor.schema)(validValue))
             case _ =>
               throw new Avro4sDecodingException(
-                s"Could not decode $value into cats.data.Validated[${invalidSchema.getFullName}, ${validSchema.getFullName}]",
+                s"Could not decode $value into cats.data.Validated[${eClassTag}, ${tClassTag}]",
                 value
               )
           }
