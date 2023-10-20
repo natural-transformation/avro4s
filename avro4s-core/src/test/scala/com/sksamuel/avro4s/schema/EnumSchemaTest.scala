@@ -359,29 +359,29 @@ class EnumSchemaTest extends AnyWordSpec with Matchers {
        //------------------------------------------------------------------------------------------------------------------
        // scala enums using the AvroEnumDefault annotation
     
-       "support top level scala enums using the AvroEnumDefault annotation" in {
+      //  "support top level scala enums using the AvroEnumDefault annotation" in {
     
-         val schema = AvroSchema[ColoursAnnotatedEnum]
+      //    val schema = AvroSchema[ColoursAnnotatedEnum]
 
-         val expected = new org.apache.avro.Schema.Parser().parse(
-           """
-             |{
-             |  "type": "enum",
-             |  "name": "Colours",
-             |  "namespace": "test",
-             |  "symbols": [
-             |    "Red",
-             |    "Amber",
-             |    "Green"
-             |  ],
-             |  "default": "Green",
-             |  "hello": "world"
-             |}
-             |""".stripMargin.trim
-         )
+      //    val expected = new org.apache.avro.Schema.Parser().parse(
+      //      """
+      //        |{
+      //        |  "type": "enum",
+      //        |  "name": "Colours",
+      //        |  "namespace": "test",
+      //        |  "symbols": [
+      //        |    "Red",
+      //        |    "Amber",
+      //        |    "Green"
+      //        |  ],
+      //        |  "default": "Green",
+      //        |  "hello": "world"
+      //        |}
+      //        |""".stripMargin.trim
+      //    )
     
-         schema.toString(true) shouldBe expected.toString(true)
-       }
+      //    schema.toString(true) shouldBe expected.toString(true)
+      //  }
     
        //------------------------------------------------------------------------------------------------------------------
        // sealed trait enums

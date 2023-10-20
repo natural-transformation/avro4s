@@ -32,11 +32,11 @@ object Build extends AutoPlugin {
   override def trigger = allRequirements
   override def projectSettings = publishingSettings ++ Seq(
     organization := org,
-    scalaVersion := "3.3.0",
+    scalaVersion := "3.3.1",
     resolvers += Resolver.mavenLocal,
     Test / parallelExecution := false,
     Test / scalacOptions ++= Seq("-Xmax-inlines:64"),
-    javacOptions := Seq("-source", "1.8", "-target", "1.8"),    
+    javacOptions := Seq("-source", "21", "-target", "21"),    
     libraryDependencies ++= Seq(
       "org.scala-lang"    % "scala3-compiler_3" % scalaVersion.value,
       "org.apache.avro"   % "avro"              % AvroVersion,
