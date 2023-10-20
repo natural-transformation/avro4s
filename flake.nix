@@ -3,34 +3,42 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
     sbtix.url = "github:natural-transformation/sbtix";
   };
 
-  outputs = { self, nixpkgs, flake-utils, sbtix, mach-nix }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs = inputs@{ nixpkgs, flake-parts, sbtix, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
+      perSystem = { config, self', inputs', pkgs, system, ... }: 
       let
         jdk21-overlay = self: super: {
           jdk = super.jdk21;
           jre = super.jdk21;
           sbt = super.sbt.override { jre = super.jdk21; };
         };
-        pkgs = import nixpkgs {
+        newPkgs = import nixpkgs {
           inherit system;
           overlays = [ jdk21-overlay ];
         };
-        libPath = nixpkgs.lib.makeLibraryPath [ pkgs.lmdb ];
-        sbtixPkg = import sbtix { inherit pkgs; };
+        libPath = nixpkgs.lib.makeLibraryPath [ newPkgs.lmdb ];
+        sbtixPkg = import sbtix { pkgs = newPkgs; };
       in {
-        devShell = pkgs.mkShell {
-          buildInputs = with pkgs; [
+        packages.default = import ./default.nix { pkgs = newPkgs; };
+
+        devShells.default = newPkgs.mkShell {
+          nativeBuildInputs = with newPkgs; [
             sbt
             sbtixPkg
-            jdk # currently openjdk 19
-            coursier
+            jdk
           ];
-
           # environment variables go here
         };
-      });
+      };
+     
+      flake = {
+        # The usual flake attributes can be defined here, including system-
+        # agnostic ones like nixosModule and system-enumerating ones, although
+        # those are more easily expressed in perSystem.
+      };
+    };
 }
