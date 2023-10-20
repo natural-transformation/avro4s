@@ -1,6 +1,6 @@
 package com.sksamuel.avro4s.avroutils
 
-import com.sksamuel.avro4s.{Avro4sConfigurationException, FieldMapper}
+import com.sksamuel.avro4s.{Avro4sConfigurationException, CustomUnionDefault, CustomUnionWithEnumDefault, FieldMapper}
 import org.apache.avro.generic.GenericData
 import org.apache.avro.util.Utf8
 import org.apache.avro.{JsonProperties, Schema, SchemaBuilder}
@@ -69,32 +69,47 @@ object SchemaHelper {
   }
 
   /**
-    * Throws if the given schema is not suitable for use in an either.
-    */
-  def validateEitherSchema(schema: Schema): Unit = {
+  * Throws if the given schema is not suitable for use in a union of two.
+  */
+  def validateUnionOfTwoSchema(schema: Schema, typeName: String): Unit = {
     if (schema.getType != Schema.Type.UNION)
       throw new Avro4sConfigurationException(
-        s"Schema type for either encoders / decoders must be UNION, received $schema")
+        s"Schema type for $typeName encoders / decoders must be UNION, received $schema")
     if (schema.getTypes.size() != 2)
       throw new Avro4sConfigurationException(
-        s"Schema for either encoders / decoders must be a UNION of to types, received $schema")
+        s"Schema for $typeName encoders / decoders must be a UNION of two types, received $schema")
   }
 
   /**
-    * Returns the subschema used for a Left in an Either.
+    * Returns the subschema used for a value of the first type in a union of two.
     */
-  def extractEitherLeftSchema(schema: Schema): Schema = {
-    validateEitherSchema(schema)
+  def getFirstFromUnionOfTwo(schema: Schema, typeName: String): Schema = {
+    validateUnionOfTwoSchema(schema, typeName)
     schema.getTypes.get(0)
   }
 
   /**
-    * Returns the subschema used for a Right in an Either.
+    * Returns the subschema used for a value of the second type in a union of two.
     */
-  def extractEitherRightSchema(schema: Schema): Schema = {
-    validateEitherSchema(schema)
+  def getSecondFromUnionOfTwo(schema: Schema, typeName: String): Schema = {
+    validateUnionOfTwoSchema(schema, typeName)
     schema.getTypes.get(1)
   }
+
+  /**
+    * Throws if the given schema is not suitable for use in an either.
+    */
+  def validateEitherSchema(schema: Schema): Unit = validateUnionOfTwoSchema(schema, "Either")
+
+  /**
+    * Returns the subschema used for a Left in an Either.
+    */
+  def extractEitherLeftSchema(schema: Schema): Schema = getFirstFromUnionOfTwo(schema, "Either")
+
+  /**
+    * Returns the subschema used for a Right in an Either.
+    */
+  def extractEitherRightSchema(schema: Schema): Schema = getSecondFromUnionOfTwo(schema, "Either")
 
   /**
     * Requires a UNION schema and will attempt to find a subschema that
@@ -124,9 +139,9 @@ object SchemaHelper {
 
     val (first, rest) = schema.getTypes.asScala.partition { t =>
       defaultType match {
-        //        case CustomUnionDefault(name, _) => name == t.getName
-        //        case CustomUnionWithEnumDefault(name, default, _) =>
-        //          name == t.getName
+        case CustomUnionDefault(name, _) => name == t.getName
+        case CustomUnionWithEnumDefault(name, default, _) =>
+                 name == t.getName
         case _ => t.getType == defaultType
       }
     }

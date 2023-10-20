@@ -6,7 +6,7 @@ object Build extends AutoPlugin {
 
   object autoImport {
     val org = "com.sksamuel.avro4s"
-    val AvroVersion = "1.11.0"
+    val AvroVersion = "1.11.1"
     val Log4jVersion = "1.2.17"
     val ScalatestVersion = "3.2.16"
     val Slf4jVersion = "2.0.9"
@@ -14,7 +14,7 @@ object Build extends AutoPlugin {
     val CatsVersion = "2.7.0"
     val RefinedVersion = "0.9.26"
     val ShapelessVersion = "2.3.7"
-    val MagnoliaVersion = "1.1.4"
+    val MagnoliaVersion = "1.3.3"
     val SbtJmhVersion = "0.3.7"
     val JmhVersion = "1.32"
   }
