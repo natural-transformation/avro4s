@@ -50,6 +50,9 @@ trait SchemaFor[T] {
       override def schema = fn(self.schema)
     }
   }
+
+  def defaultValueConverter: Option[T => AnyRef] = None
+
 }
 
 object SchemaFor
@@ -70,6 +73,12 @@ object SchemaFor
     */
   def apply[T](s: Schema): SchemaFor[T] = new SchemaFor[T] {
     override def schema: Schema = s
+  }
+
+   def apply[T](s: Schema, defaultConverter: T => AnyRef): SchemaFor[T] = new SchemaFor[T] {
+    override def schema: Schema = s
+
+    override def defaultValueConverter: Option[T => AnyRef] = Some(defaultConverter)
   }
 
   def from[T](f: => Schema): SchemaFor[T] = new SchemaFor[T] {
