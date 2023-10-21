@@ -31,7 +31,9 @@
             sbtixPkg
             jdk
           ];
-          # environment variables go here
+          # environment variables go here:
+          # Set NIX_PATH to make sure the nix-build in `build.sh` produce the same results as `nix build`
+          NIX_PATH = "nixpkgs=${inputs.nixpkgs}"; 
         };
       };
      
