@@ -74,6 +74,26 @@
         "type": "github"
       }
     },
+    "gitignore": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1694102001,
+        "narHash": "sha256-vky6VPK1n1od6vXbqzOXnekrQpTL4hbPAwUhT5J9c9E=",
+        "owner": "hercules-ci",
+        "repo": "gitignore.nix",
+        "rev": "9e21c80adf67ebcb077d75bd5e7d724d21eeafd6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hercules-ci",
+        "repo": "gitignore.nix",
+        "type": "github"
+      }
+    },
     "haskell-flake": {
       "locked": {
         "lastModified": 1684780604,
@@ -249,6 +269,7 @@
     "root": {
       "inputs": {
         "flake-parts": "flake-parts",
+        "gitignore": "gitignore",
         "nixpkgs": "nixpkgs",
         "sbtix": "sbtix"
       }
@@ -260,11 +281,11 @@
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1697562010,
-        "narHash": "sha256-dWSWCXTEvXq+6Utrx6ury7LTk3e/x5V90H2p6yhtnDw=",
+        "lastModified": 1697997793,
+        "narHash": "sha256-OTs2evEpCLBWTLatW8R5f0V7MPpruULtxUA4f7+kjIo=",
         "owner": "natural-transformation",
         "repo": "sbtix",
-        "rev": "2b8a57b1d944c126bded0dcb7c310c8ebc1abd18",
+        "rev": "985b65af1dab1b29dffe099c0db99403b773ea56",
         "type": "github"
       },
       "original": {
