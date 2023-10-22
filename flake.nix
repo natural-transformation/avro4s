@@ -4,9 +4,14 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     sbtix.url = "github:natural-transformation/sbtix";
+    gitignore = {
+      url = "github:hercules-ci/gitignore.nix";
+      # Use the same nixpkgs
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ nixpkgs, flake-parts, sbtix, ... }:
+  outputs = inputs@{ nixpkgs, flake-parts, sbtix, gitignore, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
       perSystem = { config, self', inputs', pkgs, system, ... }: 
@@ -23,7 +28,10 @@
         libPath = nixpkgs.lib.makeLibraryPath [ newPkgs.lmdb ];
         sbtixPkg = import sbtix { pkgs = newPkgs; };
       in {
-        packages.default = import ./default.nix { pkgs = newPkgs; };
+        packages.default = import ./default.nix { 
+          pkgs = newPkgs; 
+          gitignore = gitignore.lib;
+        };
 
         devShells.default = newPkgs.mkShell {
           nativeBuildInputs = with newPkgs; [
