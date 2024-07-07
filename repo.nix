@@ -2,7 +2,7 @@
 {
   "versioning" = [{
       "scalaVersion" = "3.3.1";
-      "sbtVersion" = "1.9.6";
+      "sbtVersion" = "1.10.0";
     }];
   "repos" = {
     "nix-public" = "";
@@ -271,22 +271,6 @@
     "nix-public/com/softwaremill/magnolia1_3/magnolia_3/1.3.3/magnolia_3-1.3.3.pom" = {
       url = "https://repo1.maven.org/maven2/com/softwaremill/magnolia1_3/magnolia_3/1.3.3/magnolia_3-1.3.3.pom";
       sha256 = "CE44793CBD15B425F0582A380B5246AA70B695BC2480CE2166BA953CAA720B8F";
-    };
-    "nix-public/com/sourcegraph/semanticdb-javac/0.9.6/semanticdb-javac-0.9.6-javadoc.jar" = {
-      url = "https://repo1.maven.org/maven2/com/sourcegraph/semanticdb-javac/0.9.6/semanticdb-javac-0.9.6-javadoc.jar";
-      sha256 = "AA7324055199A6A80992E50C5E26B1E2D16D09BDEDA5DFA2479CF0DDA394006D";
-    };
-    "nix-public/com/sourcegraph/semanticdb-javac/0.9.6/semanticdb-javac-0.9.6-sources.jar" = {
-      url = "https://repo1.maven.org/maven2/com/sourcegraph/semanticdb-javac/0.9.6/semanticdb-javac-0.9.6-sources.jar";
-      sha256 = "6A0D74418A237C48008BC9E7DC20814201E1F7E01583D43243EA4314292938DB";
-    };
-    "nix-public/com/sourcegraph/semanticdb-javac/0.9.6/semanticdb-javac-0.9.6.jar" = {
-      url = "https://repo1.maven.org/maven2/com/sourcegraph/semanticdb-javac/0.9.6/semanticdb-javac-0.9.6.jar";
-      sha256 = "DD8B5C30C079CCE55A9C9EDA4BFDE41B455A9526B8987BA7853155E0AD40A977";
-    };
-    "nix-public/com/sourcegraph/semanticdb-javac/0.9.6/semanticdb-javac-0.9.6.pom" = {
-      url = "https://repo1.maven.org/maven2/com/sourcegraph/semanticdb-javac/0.9.6/semanticdb-javac-0.9.6.pom";
-      sha256 = "74B698BD7B04596436AF1B7E573F29B44C62660B7044005CDA87D0717ECC6D8C";
     };
     "nix-public/com/thoughtworks/paranamer/paranamer-parent/2.8/paranamer-parent-2.8.pom" = {
       url = "https://repo1.maven.org/maven2/com/thoughtworks/paranamer/paranamer-parent/2.8/paranamer-parent-2.8.pom";
