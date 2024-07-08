@@ -2,7 +2,7 @@ package com.sksamuel.avro4s.decoders
 
 import com.sksamuel.avro4s.{Avro4sDecodingException, Decoder, Encoder}
 import com.sksamuel.avro4s.avroutils.SchemaHelper
-import com.sksamuel.avro4s.typeutils.{Annotations, Names, SubtypeOrdering}
+import com.sksamuel.avro4s.typeutils.{Annotations, Names}
 import magnolia1.SealedTrait
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericContainer
@@ -17,7 +17,8 @@ object TypeUnions {
       require(schema.isUnion)
 
       val decodersByName = ctx.subtypes.map { st =>
-        val names = Names(st.typeInfo)
+        val annos: Annotations = new Annotations(st.annotations, st.inheritedAnnotations)
+        val names = Names(st.typeInfo, annos)
         val subschema = SchemaHelper.extractTraitSubschema(names.fullName, schema)
         names.fullName -> st.typeclass.decode(subschema)
       }.toMap
