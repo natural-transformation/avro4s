@@ -407,6 +407,22 @@ class EnumSchemaTest extends AnyWordSpec with Matchers {
          schema.toString(true) shouldBe expected.toString(true)
        }
 
+    "support sealed trait enums in companion object with no default enum value" in {
+      val schema = AvroSchema[CupcatEnum2]
+      val expected = new org.apache.avro.Schema.Parser().parse(
+        """
+          |{
+          |  "type" : "enum",
+          |  "name" : "CupcatEnum2",
+          |  "namespace" : "com.sksamuel.avro4s.schema",
+          |  "symbols" : [  "SnoutleyEnum2", "CuppersEnum2" ]
+          |}
+          |""".stripMargin
+      )
+
+      schema.toString(true) shouldBe expected.toString(true)
+    }
+
     "support sealed trait enums with no default enum value" in {
       case class SealedTraitEnum(cupcat: CupcatEnum)
       val schema = AvroSchema[SealedTraitEnum]
@@ -675,6 +691,19 @@ enum ColoursAnnotatedEnum:
 sealed trait CupcatEnum
 @AvroSortPriority(2) case object SnoutleyEnum extends CupcatEnum
 @AvroSortPriority(1) case object CuppersEnum extends CupcatEnum
+
+sealed trait CupcatEnum2 {
+  def show(): String
+}
+
+object CupcatEnum2 {
+  @AvroSortPriority(1) case object CuppersEnum2 extends CupcatEnum2 {
+    def show(): String = "Cuppers"
+  }
+  @AvroSortPriority(2) case object SnoutleyEnum2 extends CupcatEnum2 {
+    def show(): String = "Snoutley"
+  }
+}
 
 @AvroEnumDefault(SnoutleyAnnotatedEnum)
 sealed trait CupcatAnnotatedEnum
