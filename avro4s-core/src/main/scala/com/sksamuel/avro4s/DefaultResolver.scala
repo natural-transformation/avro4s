@@ -49,8 +49,8 @@ object DefaultResolver {
     case x: Set[_] => x.asJava
     case p: Product => 
     customDefault(p, schema)
-    // case v if isScalaEnumeration(v) => 
-    //   customScalaEnumDefault(value)
+    case v if isScalaEnumeration(v) => 
+      customScalaEnumDefault(value)
     case _ => value.asInstanceOf[AnyRef]
   }
 
