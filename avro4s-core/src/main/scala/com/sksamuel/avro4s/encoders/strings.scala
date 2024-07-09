@@ -1,12 +1,13 @@
 package com.sksamuel.avro4s.encoders
 
-import com.sksamuel.avro4s.{Avro4sConfigurationException, Avro4sEncodingException, Encoder, FieldMapper}
-import org.apache.avro.Conversions.UUIDConversion
-import org.apache.avro.{Conversions, LogicalTypes, Schema}
+import com.sksamuel.avro4s.avroutils.ByteBufferHelper
+import com.sksamuel.avro4s.{Avro4sConfigurationException, Avro4sEncodingException, Encoder}
+import org.apache.avro.Schema
 import org.apache.avro.generic.GenericData
 import org.apache.avro.util.Utf8
 
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 import java.util.UUID
 
 trait StringEncoders:
@@ -37,13 +38,16 @@ object UTF8StringEncoder extends Encoder[String] :
   * An [[Encoder]] for Strings that encodes as [[ByteBuffer]]s.
   */
 object ByteStringEncoder extends Encoder[String] :
-  override def encode(schema: Schema): String => Any = string => ByteBuffer.wrap(string.getBytes)
+  override def encode(schema: Schema): String => Any = string =>
+    ByteBuffer.wrap(string.getBytes(StandardCharsets.UTF_8))
 
 /**
   * An [[Encoder]] for Strings that encodes as [[GenericFixed]]s.
   */
 object FixedStringEncoder extends Encoder[String] :
   override def encode(schema: Schema): String => Any = string =>
-    if (string.getBytes.length > schema.getFixedSize)
-      throw new Avro4sEncodingException(s"Cannot write string with ${string.getBytes.length} bytes to fixed type of size ${schema.getFixedSize}")
-    GenericData.get.createFixed(null, ByteBuffer.allocate(schema.getFixedSize).put(string.getBytes).array, schema).asInstanceOf[GenericData.Fixed]
+    val bytes = string.getBytes(StandardCharsets.UTF_8)
+    if (bytes.length > schema.getFixedSize)
+      throw new Avro4sEncodingException(s"Cannot write string with ${bytes.length} bytes to fixed type of size ${schema.getFixedSize}")
+    GenericData.get.createFixed(null,
+      ByteBufferHelper.asArray(ByteBuffer.allocate(schema.getFixedSize).put(bytes)), schema).asInstanceOf[GenericData.Fixed]

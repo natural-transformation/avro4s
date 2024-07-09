@@ -8,10 +8,10 @@ object Build extends AutoPlugin {
 
   object autoImport {
     val org = "com.natural-transformation"
-    val AvroVersion = "1.11.1"
+    val AvroVersion = "1.11.3"
     val Log4jVersion = "1.2.17"
-    val ScalatestVersion = "3.2.16"
-    val Slf4jVersion = "2.0.7"
+    val ScalatestVersion = "3.2.17"
+    val Slf4jVersion = "2.0.13"
     val Json4sVersion = "4.0.6"
     val CatsVersion = "2.10.0"
     val RefinedVersion = "0.9.26"
@@ -24,23 +24,25 @@ object Build extends AutoPlugin {
   import autoImport._
 
   def isGithubActions: Boolean = sys.env.getOrElse("CI", "false") == "true"
-  def releaseVersion: String = sys.env.getOrElse("RELEASE_VERSION", "5.0.0")
+  def releaseVersion: String = sys.env.getOrElse("RELEASE_VERSION", "")
   def isRelease: Boolean = releaseVersion != ""
   def githubRunNumber: String = sys.env.getOrElse("GITHUB_RUN_NUMBER", "local")
   // def ossrhUsername: String = sys.env.getOrElse("OSSRH_USERNAME", "")
   // def ossrhPassword: String = sys.env.getOrElse("OSSRH_PASSWORD", "")
-  def publishVersion: String = if (isRelease) releaseVersion else "5.0.0." + githubRunNumber + "-SNAPSHOT"
+  // def publishVersion: String = if (isRelease) releaseVersion else "5.1.0." + githubRunNumber + "-SNAPSHOT"
+  def publishVersion: String = if (isRelease) releaseVersion else "5.1.0" + "-SNAPSHOT"
 
   override def trigger = allRequirements
-  override def projectSettings = publishingSettings ++ Seq(
-    organization       := "com.natural-transformation",
-    scalaVersion := "3.3.1",
+  override def projectSettings = commonSettings ++ publishingSettings 
+  
+  val commonSettings = Seq(
+    organization       := org,
+    scalaVersion := "3.3.3",
     resolvers += Resolver.mavenLocal,
     Test / parallelExecution := false,
-    Test / scalacOptions ++= Seq("-Xmax-inlines:64"),
+    Test / scalacOptions ++= Seq("-Xmax-inlines:100", "-Yretain-trees"),
     javacOptions := Seq("-source", "21", "-target", "21"),    
     libraryDependencies ++= Seq(
-      "org.scala-lang"    % "scala3-compiler_3" % scalaVersion.value,
       "org.apache.avro"   % "avro"              % AvroVersion,
       "org.slf4j"         % "slf4j-api"         % Slf4jVersion          % "test",
       "log4j"             % "log4j"             % Log4jVersion          % "test",
@@ -68,10 +70,10 @@ object Build extends AutoPlugin {
     //     Some("snapshots" at s"${nexus}content/repositories/snapshots")
     //   }
     // }
-    licenses      := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     pomIncludeRepository   := { _ => false },
     publishTo := sonatypePublishToBundle.value,
     sonatypeCredentialHost := "s01.oss.sonatype.org",
+    sonatypeRepository := "https://s01.oss.sonatype.org/service/local",
     sonatypeProfileName := "com.natural-transformation",
     sonatypeProjectHosting := Some(GitHubHosting("natural-transformation", "avro4s", "zli@natural-transformation.com")),
     licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
@@ -86,6 +88,5 @@ object Build extends AutoPlugin {
       email = "zli@natural-transformation.com",
       url = url("https://natural-transformation.com")
     ))
-
   )
 }

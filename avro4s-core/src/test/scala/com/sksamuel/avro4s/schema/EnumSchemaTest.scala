@@ -72,10 +72,15 @@ class EnumSchemaTest extends AnyWordSpec with Matchers {
     // "support optional java enums" in {
 
     //   case class OptionalJavaEnum(wine: Option[Wine])
+    //   case class OptionalJavaEnum(wine: Option[Wine])
 
     //   val schema = AvroSchema[OptionalJavaEnum]
     //   val expected = new org.apache.avro.Schema.Parser().parse(getClass.getResourceAsStream("/java_enum_option.json"))
+    //   val schema = AvroSchema[OptionalJavaEnum]
+    //   val expected = new org.apache.avro.Schema.Parser().parse(getClass.getResourceAsStream("/java_enum_option.json"))
 
+    //   schema.toString(true) shouldBe expected.toString(true)
+    // }
     //   schema.toString(true) shouldBe expected.toString(true)
     // }
 
@@ -172,9 +177,9 @@ class EnumSchemaTest extends AnyWordSpec with Matchers {
              |  "name": "Colours",
              |  "namespace": "com.sksamuel.avro4s.schema",
              |  "symbols": [
+             |    "Red",
              |    "Amber",
-             |    "Green",
-             |    "Red"
+             |    "Green"
              |  ]
              |}
              |""".stripMargin.trim
@@ -200,7 +205,7 @@ class EnumSchemaTest extends AnyWordSpec with Matchers {
              |      "type" : "enum",
              |      "name" : "Colours",
              |      "namespace" : "com.sksamuel.avro4s.schema",
-             |      "symbols" : [ "Amber", "Green", "Red" ]
+             |      "symbols" : [  "Red", "Amber", "Green" ]
              |    }
              |  } ]
              |}
@@ -229,9 +234,9 @@ class EnumSchemaTest extends AnyWordSpec with Matchers {
              |        "name": "Colours",
              |        "namespace": "com.sksamuel.avro4s.schema",
              |        "symbols": [
+             |          "Red",
              |          "Amber",
-             |          "Green",
-             |          "Red"
+             |          "Green"
              |        ]
              |      },
              |      "default": "Red"
@@ -265,9 +270,9 @@ class EnumSchemaTest extends AnyWordSpec with Matchers {
              |          "namespace": "com.sksamuel.avro4s.schema",
              |          "name": "Colours",
              |          "symbols": [
+             |            "Red",
              |            "Amber",
-             |            "Green",
-             |            "Red"
+             |            "Green"
              |          ]
              |        }
              |      ]
@@ -302,9 +307,9 @@ class EnumSchemaTest extends AnyWordSpec with Matchers {
              |          "namespace": "com.sksamuel.avro4s.schema",
              |          "name": "Colours",
              |          "symbols": [
+             |            "Red",
              |            "Amber",
-             |            "Green",
-             |            "Red"
+             |            "Green"
              |          ]
              |        }
              |      ],
@@ -339,9 +344,9 @@ class EnumSchemaTest extends AnyWordSpec with Matchers {
              |          "namespace": "com.sksamuel.avro4s.schema",
              |          "name": "Colours",
              |          "symbols": [
+             |            "Red",
              |            "Amber",
-             |            "Green",
-             |            "Red"
+             |            "Green"
              |          ]
              |        },
              |        "null"
@@ -401,6 +406,22 @@ class EnumSchemaTest extends AnyWordSpec with Matchers {
     
          schema.toString(true) shouldBe expected.toString(true)
        }
+
+    "support sealed trait enums in companion object with no default enum value" in {
+      val schema = AvroSchema[CupcatEnum2]
+      val expected = new org.apache.avro.Schema.Parser().parse(
+        """
+          |{
+          |  "type" : "enum",
+          |  "name" : "CupcatEnum2",
+          |  "namespace" : "com.sksamuel.avro4s.schema",
+          |  "symbols" : [  "SnoutleyEnum2", "CuppersEnum2" ]
+          |}
+          |""".stripMargin
+      )
+
+      schema.toString(true) shouldBe expected.toString(true)
+    }
 
     "support sealed trait enums with no default enum value" in {
       case class SealedTraitEnum(cupcat: CupcatEnum)
@@ -523,7 +544,7 @@ class EnumSchemaTest extends AnyWordSpec with Matchers {
              |      "type" : "enum",
              |      "name" : "CupcatAnnotatedEnum",
              |      "namespace" : "com.sksamuel.avro4s.schema",
-             |      "symbols" : [ "CuppersAnnotatedEnum", "SnoutleyAnnotatedEnum" ],
+             |      "symbols" : [ "SnoutleyAnnotatedEnum", "CuppersAnnotatedEnum" ],
              |      "default" : "SnoutleyAnnotatedEnum"
              |    }
              |  } ]
@@ -551,7 +572,7 @@ class EnumSchemaTest extends AnyWordSpec with Matchers {
              |      "type" : "enum",
              |      "name" : "CupcatAnnotatedEnum",
              |      "namespace" : "com.sksamuel.avro4s.schema",
-             |      "symbols" : [ "CuppersAnnotatedEnum", "SnoutleyAnnotatedEnum" ],
+             |      "symbols" : [ "SnoutleyAnnotatedEnum", "CuppersAnnotatedEnum"],
              |      "default" : "SnoutleyAnnotatedEnum"
              |    },
              |    "default" : "CuppersAnnotatedEnum"
@@ -580,7 +601,7 @@ class EnumSchemaTest extends AnyWordSpec with Matchers {
              |      "type" : "enum",
              |      "name" : "CupcatAnnotatedEnum",
              |      "namespace" : "com.sksamuel.avro4s.schema",
-             |      "symbols" : [ "CuppersAnnotatedEnum", "SnoutleyAnnotatedEnum" ],
+             |      "symbols" : [ "SnoutleyAnnotatedEnum", "CuppersAnnotatedEnum" ],
              |      "default" : "SnoutleyAnnotatedEnum"
              |    } ]
              |  } ]
@@ -608,7 +629,7 @@ class EnumSchemaTest extends AnyWordSpec with Matchers {
              |      "type" : "enum",
              |      "name" : "CupcatAnnotatedEnum",
              |      "namespace" : "com.sksamuel.avro4s.schema",
-             |      "symbols" : [ "CuppersAnnotatedEnum", "SnoutleyAnnotatedEnum" ],
+             |      "symbols" : [ "SnoutleyAnnotatedEnum", "CuppersAnnotatedEnum"],
              |      "default" : "SnoutleyAnnotatedEnum"
              |    } ],
              |    "default": null
@@ -637,7 +658,7 @@ class EnumSchemaTest extends AnyWordSpec with Matchers {
              |      "type" : "enum",
              |      "name" : "CupcatAnnotatedEnum",
              |      "namespace" : "com.sksamuel.avro4s.schema",
-             |      "symbols" : [ "CuppersAnnotatedEnum", "SnoutleyAnnotatedEnum" ],
+             |      "symbols" : [ "SnoutleyAnnotatedEnum", "CuppersAnnotatedEnum" ],
              |      "default" : "SnoutleyAnnotatedEnum"
              |    },
              |    "null" ],
@@ -662,20 +683,30 @@ enum Colours:
 @AvroEnumDefault(ColoursAnnotatedEnum.Green)
 @AvroProp("hello", "world")
 enum ColoursAnnotatedEnum:
-  @AvroSortPriority(0)
   case Red
-  @AvroSortPriority(1)
   case Amber
-  @AvroSortPriority(2)
   case Green
 
 
 sealed trait CupcatEnum
-@AvroSortPriority(0) case object SnoutleyEnum extends CupcatEnum
+@AvroSortPriority(2) case object SnoutleyEnum extends CupcatEnum
 @AvroSortPriority(1) case object CuppersEnum extends CupcatEnum
+
+sealed trait CupcatEnum2 {
+  def show(): String
+}
+
+object CupcatEnum2 {
+  @AvroSortPriority(1) case object CuppersEnum2 extends CupcatEnum2 {
+    def show(): String = "Cuppers"
+  }
+  @AvroSortPriority(2) case object SnoutleyEnum2 extends CupcatEnum2 {
+    def show(): String = "Snoutley"
+  }
+}
 
 @AvroEnumDefault(SnoutleyAnnotatedEnum)
 sealed trait CupcatAnnotatedEnum
-@AvroSortPriority(1) case object SnoutleyAnnotatedEnum extends CupcatAnnotatedEnum
-@AvroSortPriority(0) case object CuppersAnnotatedEnum extends CupcatAnnotatedEnum
+@AvroSortPriority(1) case object CuppersAnnotatedEnum extends CupcatAnnotatedEnum
+@AvroSortPriority(2) case object SnoutleyAnnotatedEnum extends CupcatAnnotatedEnum
 
