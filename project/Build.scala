@@ -29,11 +29,14 @@ object Build extends AutoPlugin {
   def githubRunNumber: String = sys.env.getOrElse("GITHUB_RUN_NUMBER", "local")
   // def ossrhUsername: String = sys.env.getOrElse("OSSRH_USERNAME", "")
   // def ossrhPassword: String = sys.env.getOrElse("OSSRH_PASSWORD", "")
-  def publishVersion: String = if (isRelease) releaseVersion else "5.1.0." + githubRunNumber + "-SNAPSHOT"
+  // def publishVersion: String = if (isRelease) releaseVersion else "5.1.0." + githubRunNumber + "-SNAPSHOT"
+  def publishVersion: String = if (isRelease) releaseVersion else "5.1.0" + "-SNAPSHOT"
 
   override def trigger = allRequirements
-  override def projectSettings = publishingSettings ++ Seq(
-    organization       := "com.natural-transformation",
+  override def projectSettings = commonSettings ++ publishingSettings 
+  
+  val commonSettings = Seq(
+    organization       := org,
     scalaVersion := "3.3.3",
     resolvers += Resolver.mavenLocal,
     Test / parallelExecution := false,
@@ -67,10 +70,10 @@ object Build extends AutoPlugin {
     //     Some("snapshots" at s"${nexus}content/repositories/snapshots")
     //   }
     // }
-    licenses      := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     pomIncludeRepository   := { _ => false },
     publishTo := sonatypePublishToBundle.value,
     sonatypeCredentialHost := "s01.oss.sonatype.org",
+    sonatypeRepository := "https://s01.oss.sonatype.org/service/local",
     sonatypeProfileName := "com.natural-transformation",
     sonatypeProjectHosting := Some(GitHubHosting("natural-transformation", "avro4s", "zli@natural-transformation.com")),
     licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
@@ -85,6 +88,5 @@ object Build extends AutoPlugin {
       email = "zli@natural-transformation.com",
       url = url("https://natural-transformation.com")
     ))
-
   )
 }
