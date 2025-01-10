@@ -27,8 +27,6 @@ class AvroBinaryInputStream[T](in: InputStream,
                                readerSchema: Schema)
                               (using decoder: Decoder[T]) extends AvroInputStream[T] {
 
-  def this(in: InputStream, writerSchema: Schema)(using decoder: Decoder[T]) = this(in, writerSchema, writerSchema)
-
   private val datumReader = new GenericDatumReader[Any](writerSchema, readerSchema, GenericData.get)
   private val avroDecoder = DecoderFactory.get().binaryDecoder(in, null)
   private val decodeT = decoder.decode(readerSchema)
