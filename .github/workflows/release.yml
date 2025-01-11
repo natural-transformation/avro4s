@@ -11,6 +11,8 @@ on:
         description: "The branch to release from"
         required: true
         default: 'master'
+  release:
+    types: [published]
 
 jobs:
   scala-3:
