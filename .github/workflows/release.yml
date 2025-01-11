@@ -18,10 +18,31 @@ jobs:
   scala-3:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
+      - name: Check out repository for workflow_dispatch
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Check out repository for release
+        if: github.event_name == 'release'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Determine release version
+        id: set_version
+        run: |
+          # If triggered by workflow_dispatch, use the input 'version';
+          # otherwise, derive version from the GitHub release tag, stripping any leading "v".
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            # Remove leading 'v' from tag, e.g., 'v5.1.2' becomes '5.1.2'
+            TAG="${{ github.event.release.tag_name#v }}"
+            echo "version=$TAG" >> $GITHUB_OUTPUT
+          fi
 
       - name: Install Nix (with flake support)
         uses: cachix/install-nix-action@v20
@@ -42,6 +63,7 @@ jobs:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PGP_PASSPHRASE }}
 
+      # Optional: Remove if confident in GPG import
       - name: Show GPG user IDs
         run: |
           echo "fingerprint: ${{ steps.import_gpg.outputs.fingerprint }}"
@@ -51,8 +73,7 @@ jobs:
 
       - name: Publish Release
         env:
-          RELEASE_VERSION: ${{ github.event.inputs.version }}
+          RELEASE_VERSION: ${{ steps.set_version.outputs.version }}
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-
         run: nix develop --command sbt sonatypeBundleRelease
