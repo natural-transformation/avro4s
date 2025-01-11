@@ -26,6 +26,13 @@ jobs:
         with:
           extra_nix_config: sandbox = true
 
-      # 3. Run tests within the devShell defined in flake.nix
+      # 3. Add Cachix caching to speed up repeated builds
+      - name: Use Cachix
+        uses: cachix/cachix-action@v10
+        with:
+          name: avro4s
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      # 4. Run tests within the devShell defined in flake.nix
       - name: Run Scala 3 tests
         run: nix develop --command sbt test
