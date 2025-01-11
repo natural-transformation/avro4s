@@ -26,10 +26,6 @@ object Build extends AutoPlugin {
   def isGithubActions: Boolean = sys.env.getOrElse("CI", "false") == "true"
   def releaseVersion: String = sys.env.getOrElse("RELEASE_VERSION", "")
   def isRelease: Boolean = releaseVersion != ""
-  def githubRunNumber: String = sys.env.getOrElse("GITHUB_RUN_NUMBER", "local")
-  // def ossrhUsername: String = sys.env.getOrElse("OSSRH_USERNAME", "")
-  // def ossrhPassword: String = sys.env.getOrElse("OSSRH_PASSWORD", "")
-  // def publishVersion: String = if (isRelease) releaseVersion else "5.1.0." + githubRunNumber + "-SNAPSHOT"
   def publishVersion: String = if (isRelease) releaseVersion else "5.1.0" + "-SNAPSHOT"
 
   override def trigger = allRequirements
@@ -54,23 +50,32 @@ object Build extends AutoPlugin {
   val publishingSettings = Seq(
     publishMavenStyle := true,
     Test / publishArtifact := false,
-    // credentials += Credentials(
-    //   "Sonatype Nexus Repository Manager",
-    //   "s01.oss.sonatype.org",
-    //   ossrhUsername,
-    //   ossrhPassword
-    // ),
-    credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials"),
+
+    credentials ++= {
+      val credsFile = Path.userHome / ".sbt" / "sonatype_credentials"
+      if (credsFile.exists()) {
+        // If the file exists, use it (for local publishing)
+        Seq(Credentials(credsFile))
+      } else {
+        // Otherwise, read credentials from env variables if available.
+        val user = sys.env.getOrElse("OSSRH_USERNAME", "")
+        val pass = sys.env.getOrElse("OSSRH_PASSWORD", "")
+        if (user.nonEmpty && pass.nonEmpty) {
+          Seq(Credentials(
+            realm = "Sonatype Nexus Repository Manager",
+            host = "s01.oss.sonatype.org",
+            userName = user,
+            passwd = pass
+          ))
+        } else {
+          // No file and no env variables means no credentials are provided
+          Nil
+        }
+      }
+    },
+
     version := publishVersion,
-    // publishTo := {
-    //   val nexus = "https://s01.oss.sonatype.org/"
-    //   if (isRelease) {
-    //     Some("releases" at s"${nexus}service/local/staging/deploy/maven2")
-    //   } else {
-    //     Some("snapshots" at s"${nexus}content/repositories/snapshots")
-    //   }
-    // }
-    pomIncludeRepository   := { _ => false },
+    pomIncludeRepository := { _ => false },
     publishTo := sonatypePublishToBundle.value,
     sonatypeCredentialHost := "s01.oss.sonatype.org",
     sonatypeRepository := "https://s01.oss.sonatype.org/service/local",

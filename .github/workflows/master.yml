@@ -12,18 +12,31 @@ on:
       - release/5*
 
 jobs:
-  scala_3_0:
+  build_and_publish:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout the repo
-        uses: actions/checkout@v2
+      - name: Check out repository
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - uses: olafurpg/setup-scala@v11
+      - name: Install Nix (with flake support)
+        uses: cachix/install-nix-action@v20
+        with:
+          extra_nix_config: sandbox = true
 
-      - name: run tests
-        run: sbt test
+      - name: Use Cachix
+        uses: cachix/cachix-action@v10
+        with:
+          name: avro4s
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          push: true
+
+      - name: Run Tests
+        run: nix develop --command sbt test
+
+      - name: Build with Nix
+        run: nix build
 
       - name: Import GPG key
         id: import_gpg
@@ -32,15 +45,15 @@ jobs:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PGP_PASSPHRASE }}
 
-      - name: GPG user IDs
+      - name: Show GPG user IDs (Optional)
         run: |
           echo "fingerprint: ${{ steps.import_gpg.outputs.fingerprint }}"
           echo "keyid:       ${{ steps.import_gpg.outputs.keyid }}"
           echo "name:        ${{ steps.import_gpg.outputs.name }}"
           echo "email:       ${{ steps.import_gpg.outputs.email }}"
 
-      - name: publish snapshot
-        run: sbt publish
+      - name: Publish Snapshot
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+        run: nix develop --command sbt publishSigned
