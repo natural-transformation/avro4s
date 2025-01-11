@@ -23,6 +23,7 @@ jobs:
       # 2. Install Nix with flake support
       - name: Install Nix
         uses: cachix/install-nix-action@v20
+        push: true
         with:
           extra_nix_config: sandbox = true
 
@@ -36,3 +37,7 @@ jobs:
       # 4. Run tests within the devShell defined in flake.nix
       - name: Run Scala 3 tests
         run: nix develop --command sbt test
+
+      # 5. Build the project with Nix
+      - name: Build with Nix
+        run: nix build
