@@ -35,7 +35,7 @@ class ReadMeExamples extends AnyWordSpec with Matchers {
         97, 115, 121, 32, 111, 102, 32, 103, 111, 108, 100, 0))
 
       val in = new ByteArrayInputStream(bytes)
-      val input = AvroInputStream.binary[Composer].from(in).build(AvroSchema[Composer])
+      val input = AvroInputStream.binary[Composer].from(in).build(AvroSchema[Composer], AvroSchema[Composer])
       val result = input.iterator.toSeq
       result shouldBe Vector(ennio)
     }
@@ -55,7 +55,7 @@ class ReadMeExamples extends AnyWordSpec with Matchers {
 
       val in = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))
       val schema = AvroSchema[Composer]
-      val input = AvroInputStream.json[Composer].from(in).build(schema)
+      val input = AvroInputStream.json[Composer].from(in).build(schema, schema)
       val result = input.iterator.toSeq
       result shouldBe Vector(ennio)
     }

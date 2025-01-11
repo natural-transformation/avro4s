@@ -66,9 +66,9 @@ class AvroInputStreamBuilderWithSource[T: Decoder](format: AvroFormat, in: Input
   /**
     * Builds an [[AvroInputStream]] with the specified writer schema.
     */
-  def build(writerSchema: Schema) = format match {
-    case AvroFormat.Data => new AvroDataInputStream[T](in, Some(writerSchema))
-    case AvroFormat.Binary => new AvroBinaryInputStream[T](in, writerSchema)
+  def build(writerSchema: Schema, readerSchema: Schema) = format match {
+    case AvroFormat.Data => new AvroDataInputStream[T](in, Some(writerSchema, readerSchema))
+    case AvroFormat.Binary => new AvroBinaryInputStream[T](in, writerSchema, readerSchema)
     case AvroFormat.Json => new AvroJsonInputStream[T](in, writerSchema)
   }
 

@@ -113,7 +113,7 @@ object AvroUtil {
 
   def fromBin[T: Decoder](bytes: Array[Byte], writerSchema: Schema): T = {
 
-    val is     = AvroInputStream.binary[T].from(bytes).build(writerSchema)
+    val is     = AvroInputStream.binary[T].from(bytes).build(writerSchema, writerSchema)
     val record = is.iterator.next()
     is.close()
 
@@ -122,7 +122,7 @@ object AvroUtil {
 
   def fromBin[T <: AnyRef](bytes: Array[Byte])(using schema: SchemaFor[T], decoder: Decoder[T]): T = {
 
-    val is     = AvroInputStream.binary[T].from(bytes).build(schema.schema)
+    val is     = AvroInputStream.binary[T].from(bytes).build(schema.schema, schema.schema)
     val record = is.iterator.next()
     is.close()
 
@@ -137,7 +137,7 @@ object AvroUtil {
   }
 
   def readByteBuffer[T: Decoder](buf: ByteBuffer, writerSchema: Schema): T = {
-    val is     = AvroInputStream.binary[T].from(new ByteBufferInputStream(List(buf).asJava)).build(writerSchema)
+    val is     = AvroInputStream.binary[T].from(new ByteBufferInputStream(List(buf).asJava)).build(writerSchema, writerSchema)
     val record = is.iterator.next()
     is.close()
 

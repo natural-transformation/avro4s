@@ -27,17 +27,17 @@ import scala.util.{Failure, Try}
   * @param decoder      a mapping from the base avro type to an instance of T
   */
 class AvroDataInputStream[T](in: InputStream,
-                             writerSchema: Option[Schema])
+                             maybeWriterSchemaReaderSchema: Option[(Schema, Schema)])
                             (using decoder: Decoder[T]) extends AvroInputStream[T] {
 
   // if no writer schema is specified, then we create a reader that uses what's present in the files
-  private val datumReader: DatumReader[Any] = writerSchema match {
-    case Some(schema) => GenericData.get.createDatumReader(schema).asInstanceOf[DatumReader[Any]]
+  private val datumReader: DatumReader[Any] = maybeWriterSchemaReaderSchema match {
+    case Some(writerSchema, readerSchema) => GenericData.get.createDatumReader(writerSchema, readerSchema).asInstanceOf[DatumReader[Any]]
     case _ => GenericData.get.createDatumReader(null).asInstanceOf[DatumReader[Any]]
   }
 
   private val dataFileReader = new DataFileStream[Any](in, datumReader)
-  private val decodeT = writerSchema.map(schema => decoder.decode(schema))
+  private val decodeT = maybeWriterSchemaReaderSchema.map((writerSchema, readerSchema) => decoder.decode(readerSchema))
 
   private def decode(record: Any, schema: Schema) = decodeT.getOrElse(decoder.decode(schema)).apply(record)
 

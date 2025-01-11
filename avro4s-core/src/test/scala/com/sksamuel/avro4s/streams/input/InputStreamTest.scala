@@ -11,11 +11,13 @@ trait InputStreamTest extends AnyFunSuite with Matchers {
 
   def readData[T: SchemaFor : Decoder](out: ByteArrayOutputStream): T = readData(out.toByteArray)
   def readData[T: SchemaFor : Decoder](bytes: Array[Byte]): T = {
-    AvroInputStream.data.from(bytes).build(implicitly[SchemaFor[T]].schema).iterator.next()
+    val writerAndReaderSchema = implicitly[SchemaFor[T]].schema
+    AvroInputStream.data.from(bytes).build(writerAndReaderSchema, writerAndReaderSchema).iterator.next()
   }
 
   def tryReadData[T: SchemaFor : Decoder](bytes: Array[Byte]): Iterator[Try[T]] = {
-    AvroInputStream.data.from(bytes).build(implicitly[SchemaFor[T]].schema).tryIterator
+    val writerAndReaderSchema = implicitly[SchemaFor[T]].schema
+    AvroInputStream.data.from(bytes).build(writerAndReaderSchema, writerAndReaderSchema).tryIterator
   }
 
   def writeData[T: Encoder : SchemaFor](t: T): ByteArrayOutputStream = {
@@ -28,7 +30,8 @@ trait InputStreamTest extends AnyFunSuite with Matchers {
 
   def readBinary[T: SchemaFor : Decoder](out: ByteArrayOutputStream): T = readBinary(out.toByteArray)
   def readBinary[T: SchemaFor : Decoder](bytes: Array[Byte]): T = {
-    AvroInputStream.binary.from(bytes).build(implicitly[SchemaFor[T]].schema).iterator.next()
+    val writerAndReaderSchema = implicitly[SchemaFor[T]].schema
+    AvroInputStream.binary.from(bytes).build(writerAndReaderSchema, writerAndReaderSchema).iterator.next()
   }
 
   def writeBinary[T: SchemaFor : Encoder](t: T): ByteArrayOutputStream = {
@@ -41,7 +44,7 @@ trait InputStreamTest extends AnyFunSuite with Matchers {
 
   def readJson[T: SchemaFor : Decoder](out: ByteArrayOutputStream): T = readJson(out.toByteArray)
   def readJson[T](using schemaFor: SchemaFor[T], decoder: Decoder[T])(bytes: Array[Byte]): T = {
-    AvroInputStream.json[T].from(bytes).build(schemaFor.schema).iterator.next()
+    AvroInputStream.json[T].from(bytes).build(schemaFor.schema, schemaFor.schema).iterator.next()
   }
 
   def writeJson[T: Encoder : SchemaFor](t: T): ByteArrayOutputStream = {

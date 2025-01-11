@@ -1,23 +1,24 @@
-# A fork of avro4s
+# Avro4s Fork
 
-### Disclaimer
+This repository is an actively maintained fork of the original [avro4s](https://github.com/sksamuel/avro4s). Our fork focuses on supporting modern requirements—namely **Java 21**, **Scala 3**, and **Nix**—and may include changes that are not backward compatible with earlier Java or Scala versions.
 
-This repository is a fork of the original [avro4s](https://github.com/sksamuel/avro4s) project. It is not an official release and should not be considered as such.
+## Disclaimer
+You are free to copy any features or improvements from this fork back into the original avro4s project. Please note that this repository is optimized for our own production needs, so it may diverge substantially from the original.
 
-#### Why This Fork Exists
+## Why This Fork?
+We created this fork to meet specific enterprise and client requirements that demand:
+1. **Java 21 Support** (production-ready)
+2. **Scala 3 Support** (production-ready)
+3. **Nix Support** for reproducible builds and environments
 
-This fork exists to accommodate specific needs and requirements for our company that could involve breaking changes from the original codebase. These changes may affect compatibility and could cause issues if you're expecting behavior identical to the original `avro4s` library. 
+These updates may introduce breaking changes for projects using older Java or Scala versions.
 
-**Features:**
-1. Nix support
-2. Java 21 support
+## Commercial Support
+If your company is considering this fork for production, we can assist with both **adoption** and **migration**. Because each use case varies, pricing is arranged on an individual basis. For inquiries, please contact [Natural Transformation](mailto:zli@natural-transformation.com).
 
+## Contributing and Issue Reporting
+We welcome all contributions—bug reports, feature requests, and pull requests. Before contributing, please:
+- Check existing [issues](../../issues) and [pull requests](../../pulls) to avoid duplication
+- Ensure any changes align with this project’s focus on Java 21, Scala 3, and Nix support
 
-#### Use at Your Own Risk
-
-While we strive to maintain high-quality code and robust functionality, this fork is provided "as is," without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and non-infringement.
-
-#### Contributions and Issues
-
-We welcome contributions and issue reporting. Feel free to open GitHub issues for any problems you encounter or enhancements you propose. Pull requests are also highly appreciated. If you'd like to contribute, please make sure to review the existing issues and pull requests to avoid duplication.
-
+We appreciate your feedback and help in making this fork even better!
