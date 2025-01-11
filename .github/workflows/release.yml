@@ -40,7 +40,8 @@ jobs:
             echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
           else
             # Remove leading 'v' from tag, e.g., 'v5.1.2' becomes '5.1.2'
-            TAG="${{ github.event.release.tag_name#v }}"
+            TAG="${{ github.event.release.tag_name }}"
+            TAG="${TAG#v}"
             echo "version=$TAG" >> $GITHUB_OUTPUT
           fi
 
