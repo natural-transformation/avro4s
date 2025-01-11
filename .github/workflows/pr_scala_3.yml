@@ -23,9 +23,9 @@ jobs:
       # 2. Install Nix with flake support
       - name: Install Nix
         uses: cachix/install-nix-action@v20
-        push: true
         with:
           extra_nix_config: sandbox = true
+          push: true
 
       # 3. Add Cachix caching to speed up repeated builds
       - name: Use Cachix
