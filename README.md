@@ -26,16 +26,86 @@ If you need to work with [cats](https://github.com/typelevel/cats), you also nee
 ### Example
 
 ```scala
+import com.sksamuel.avro4s.{AvroInputStream, AvroOutputStream, Decoder, Encoder, SchemaFor}
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.OutputStream
+import java.nio.ByteBuffer
+import org.apache.avro.Schema
+import org.apache.avro.util.ByteBufferInputStream
+import scala.jdk.CollectionConverters.SeqHasAsJava
+
+object AvroUtil {
+  def toBin[T: Encoder: SchemaFor](o: T): Array[Byte] = {
+
+    val output = new ByteArrayOutputStream
+    val avro   = AvroOutputStream.binary[T].to(output).build()
+    avro.write(o)
+    avro.close()
+
+    output.toByteArray
+  }
+
+  def fromBin[T: Decoder: SchemaFor](bytes: Array[Byte], writerSchema: Schema): T = {
+
+    val is     = AvroInputStream.binary[T].from(bytes).build(writerSchema, SchemaFor[T].schema)
+    val record = is.iterator.next()
+    is.close()
+
+    record
+  }
+
+  def fromBin[T <: AnyRef](bytes: Array[Byte])(using schemaT: SchemaFor[T], decoder: Decoder[T]): T = {
+
+    val is     = AvroInputStream.binary[T].from(bytes).build(schemaT.schema, schemaT.schema)
+    val record = is.iterator.next()
+    is.close()
+
+    record
+  }
+
+  def writeByteBuffer[T: Encoder: SchemaFor](o: T, buf: ByteBuffer): Unit = {
+    val stream = ByteBufferBackedOutputStream(buf)
+    val avro   = AvroOutputStream.binary[T].to(stream).build()
+    avro.write(o)
+    avro.close()
+  }
+
+  def readByteBuffer[T: Decoder: SchemaFor](buf: ByteBuffer, writerSchema: Schema): T = {
+    val is = AvroInputStream
+      .binary[T]
+      .from(new ByteBufferInputStream(List(buf).asJava))
+      .build(writerSchema, SchemaFor[T].schema)
+    val record = is.iterator.next()
+    is.close()
+
+    record
+  }
+
+  case class ByteBufferBackedOutputStream(buf: ByteBuffer) extends OutputStream {
+    @throws[IOException]
+    def write(b: Int): Unit =
+      buf.put(b.toByte)
+
+    @throws[IOException]
+    override def write(bytes: Array[Byte], off: Int, len: Int): Unit =
+      buf.put(bytes, off, len)
+  }
+
+}
+```
+
+```scala
 import cats.data.{NonEmptyList, Validated, ValidatedNel}
 import com.sksamuel.avro4s.SchemaFor
 import com.sksamuel.avro4s.cats.{given, _}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
-class AvroMappingSpec extends AnyWordSpecLike with Matchers {
+class AvroUtilSpec extends AnyWordSpecLike with Matchers {
 
-  "Avro4s" should {
-    "Serialize and deserialize a case class with a Validated field" in {
+  "AvroUtil" should {
+    "serialize and deserialize a case class with a Validated field" in {
       case class CatsValidatedTest(f1: Validated[String, Int], f2: Validated[String, Long])
 
       val schemaFor: SchemaFor[CatsValidatedTest] = summon[SchemaFor[CatsValidatedTest]]
@@ -48,7 +118,7 @@ class AvroMappingSpec extends AnyWordSpecLike with Matchers {
 
     }
 
-    "Serialize and deserialize a case class with a ValidatedNel field" in {
+    "serialize and deserialize a case class with a ValidatedNel field" in {
       case class CatsValidatedNelTest(errorsOrNum: ValidatedNel[String, Int])
       val schemaFor: SchemaFor[CatsValidatedNelTest] = summon[SchemaFor[CatsValidatedNelTest]]
       println(s"schema for CatsValidatedNelTest is ${schemaFor.schema.toString(true)}")
@@ -62,6 +132,7 @@ class AvroMappingSpec extends AnyWordSpecLike with Matchers {
   }
 
 }
+
 ```
 **Note**: Although the library is published under the group ID `com.natural-transformation`, the package imports remain the same as the original Avro4s library (`com.sksamuel.avro4s`). This ensures backward compatibility with existing codebases, requiring no changes to import statements.
 
