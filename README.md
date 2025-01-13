@@ -26,70 +26,61 @@ If you need to work with [cats](https://github.com/typelevel/cats), you also nee
 ### Example
 
 ```scala
-import com.sksamuel.avro4s.{AvroInputStream, AvroOutputStream, Decoder, Encoder, SchemaFor}
+import com.sksamuel.avro4s._
 import java.io.ByteArrayOutputStream
-import java.io.IOException
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import org.apache.avro.Schema
 import org.apache.avro.util.ByteBufferInputStream
 import scala.jdk.CollectionConverters.SeqHasAsJava
+import scala.util.Using
 
 object AvroUtil {
-  def toBin[T: Encoder: SchemaFor](o: T): Array[Byte] = {
 
-    val output = new ByteArrayOutputStream
-    val avro   = AvroOutputStream.binary[T].to(output).build()
-    avro.write(o)
-    avro.close()
+  def toBin[T: Encoder: SchemaFor](o: T): Array[Byte] =
+    Using.resource(new ByteArrayOutputStream) { output =>
+      Using.resource(AvroOutputStream.binary[T].to(output).build()) { avro =>
+        avro.write(o)
+      }
+      output.toByteArray
+    }
 
-    output.toByteArray
-  }
+  def fromBin[T: Decoder: SchemaFor](bytes: Array[Byte], writerSchema: Schema): T =
+    Using.resource(
+      AvroInputStream.binary[T].from(bytes).build(writerSchema, SchemaFor[T].schema)
+    ) { is =>
+      is.iterator.next() // can throw
+    }
 
-  def fromBin[T: Decoder: SchemaFor](bytes: Array[Byte], writerSchema: Schema): T = {
+  def fromBin[T: Decoder: SchemaFor](bytes: Array[Byte]): T =
+    Using.resource(
+      AvroInputStream.binary[T].from(bytes).build(SchemaFor[T].schema, SchemaFor[T].schema)
+    ) { is =>
+      is.iterator.next() // can throw
+    }
 
-    val is     = AvroInputStream.binary[T].from(bytes).build(writerSchema, SchemaFor[T].schema)
-    val record = is.iterator.next()
-    is.close()
+  def writeByteBuffer[T: Encoder: SchemaFor](o: T, buf: ByteBuffer): Unit =
+    Using.resource(AvroOutputStream.binary[T].to(new ByteBufferBackedOutputStream(buf)).build()) { avro =>
+      avro.write(o) // can throw
+    }
 
-    record
-  }
+  def readByteBuffer[T: Decoder: SchemaFor](buf: ByteBuffer, writerSchema: Schema): T =
+    Using.resource(
+      AvroInputStream
+        .binary[T]
+        .from(new ByteBufferInputStream(List(buf).asJava))
+        .build(writerSchema, SchemaFor[T].schema)
+    ) { is =>
+      is.iterator.next() // can throw
+    }
 
-  def fromBin[T <: AnyRef](bytes: Array[Byte])(using schemaT: SchemaFor[T], decoder: Decoder[T]): T = {
-
-    val is     = AvroInputStream.binary[T].from(bytes).build(schemaT.schema, schemaT.schema)
-    val record = is.iterator.next()
-    is.close()
-
-    record
-  }
-
-  def writeByteBuffer[T: Encoder: SchemaFor](o: T, buf: ByteBuffer): Unit = {
-    val stream = ByteBufferBackedOutputStream(buf)
-    val avro   = AvroOutputStream.binary[T].to(stream).build()
-    avro.write(o)
-    avro.close()
-  }
-
-  def readByteBuffer[T: Decoder: SchemaFor](buf: ByteBuffer, writerSchema: Schema): T = {
-    val is = AvroInputStream
-      .binary[T]
-      .from(new ByteBufferInputStream(List(buf).asJava))
-      .build(writerSchema, SchemaFor[T].schema)
-    val record = is.iterator.next()
-    is.close()
-
-    record
-  }
-
-  case class ByteBufferBackedOutputStream(buf: ByteBuffer) extends OutputStream {
-    @throws[IOException]
+  private class ByteBufferBackedOutputStream(buf: ByteBuffer) extends OutputStream {
     def write(b: Int): Unit =
-      buf.put(b.toByte)
+      buf.put(b.toByte) // can throw
 
-    @throws[IOException]
     override def write(bytes: Array[Byte], off: Int, len: Int): Unit =
-      buf.put(bytes, off, len)
+      buf.put(bytes, off, len) // can throw
+
   }
 
 }
