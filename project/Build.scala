@@ -145,7 +145,8 @@ object Build extends AutoPlugin {
       else sonatypePublishToBundle.value
     },
     // sbt-sonatype Central commands use the OSSRH Staging API Service (backed by Central).
-    sonatypeCredentialHost := OssrhStagingApiHost,
+    // sonatypeCentral* commands require the credential host to be `central.sonatype.com`.
+    sonatypeCredentialHost := CentralPortalHost,
     sonatypeRepository := OssrhStagingApiServiceLocal,
     sonatypeProfileName := "com.natural-transformation",
     sonatypeProjectHosting := Some(GitHubHosting("natural-transformation", "avro4s", "zli@natural-transformation.com")),

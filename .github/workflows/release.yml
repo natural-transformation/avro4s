@@ -76,6 +76,8 @@ jobs:
         env:
           RELEASE_VERSION: ${{ steps.set_version.outputs.version }}
           # Release credentials (Sonatype Central / OSSRH Staging API Service).
+          SONATYPE_CENTRAL_USERNAME: ${{ secrets.SONATYPE_CENTRAL_USERNAME }}
+          SONATYPE_CENTRAL_PASSWORD: ${{ secrets.SONATYPE_CENTRAL_PASSWORD }}
           SONATYPE_STAGING_USERNAME: ${{ secrets.SONATYPE_STAGING_USERNAME }}
           SONATYPE_STAGING_PASSWORD: ${{ secrets.SONATYPE_STAGING_PASSWORD }}
         run: nix develop --command sbt publishSigned
@@ -84,6 +86,8 @@ jobs:
         env:
           RELEASE_VERSION: ${{ steps.set_version.outputs.version }}
           # Release credentials (Sonatype Central / OSSRH Staging API Service).
+          SONATYPE_CENTRAL_USERNAME: ${{ secrets.SONATYPE_CENTRAL_USERNAME }}
+          SONATYPE_CENTRAL_PASSWORD: ${{ secrets.SONATYPE_CENTRAL_PASSWORD }}
           SONATYPE_STAGING_USERNAME: ${{ secrets.SONATYPE_STAGING_USERNAME }}
           SONATYPE_STAGING_PASSWORD: ${{ secrets.SONATYPE_STAGING_PASSWORD }}
         run: nix develop --command sbt sonatypeCentralRelease
