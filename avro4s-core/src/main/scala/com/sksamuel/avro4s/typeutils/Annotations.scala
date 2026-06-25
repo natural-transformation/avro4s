@@ -5,6 +5,9 @@ import magnolia1.{CaseClass, TypeInfo}
 
 class Annotations(annos: Seq[Any], inheritedAnnos: Seq[Any] = Nil) {
   private[this] val allAnnos: Seq[Any] = annos ++ inheritedAnnos
+  private[this] val transientAnnotation: Option[AvroTransient] = annos.collectFirst {
+    case t: AvroTransient => t
+  }
 
   def name: Option[String] = annos.collectFirst {
     case t: AvroNameable => t.name
@@ -26,9 +29,9 @@ class Annotations(annos: Seq[Any], inheritedAnnos: Seq[Any] = Nil) {
     case t: AvroDocumentable => t.doc
   }
 
-  def transient: Boolean = annos.collectFirst {
-    case t: AvroTransient => t
-  }.isDefined
+  def transient: Boolean = transientAnnotation.isDefined
+
+  def transientUseDefault: Boolean = transientAnnotation.exists(_.useDefault)
   
   def nodefault: Boolean = annos.collectFirst {
     case t: AvroNoDefault => t

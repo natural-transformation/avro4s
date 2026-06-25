@@ -57,6 +57,7 @@ in
       (importIfExists ./avro4s-core/repo.nix)
       (importIfExists ./avro4s-cats/repo.nix)
       (importIfExists ./avro4s-kafka/repo.nix)
+      (importIfExists ./sbtix-plugin-repo.nix)
       (import ./project/repo.nix)
       # Some sbt plugins (from project/plugins.sbt) end up locked under
       # project/project/repo.nix. Include it so Nix builds stay fully offline.

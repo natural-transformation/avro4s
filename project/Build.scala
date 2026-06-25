@@ -10,10 +10,10 @@ object Build extends AutoPlugin {
     val org = "com.natural-transformation"
     val AvroVersion = "1.11.5"
     val ScalatestVersion = "3.2.17"
-    val Slf4jVersion = "2.0.17"
+    val Slf4jVersion = "2.0.18"
     val Json4sVersion = "4.0.6"
     val CatsVersion = "2.10.0"
-    val MagnoliaVersion = "1.3.18"
+    val MagnoliaVersion = "1.3.20"
     val SbtJmhVersion = "0.4.8"
     val JmhVersion = "1.32"
   }
