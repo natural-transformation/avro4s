@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    sbtix.url = "github:natural-transformation/sbtix";
+    sbtix.url = "github:natural-transformation/sbtix/v1.2.8";
     gitignore = {
       url = "github:hercules-ci/gitignore.nix";
       # Use the same nixpkgs
