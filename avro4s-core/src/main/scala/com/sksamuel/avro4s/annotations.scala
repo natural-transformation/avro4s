@@ -68,12 +68,41 @@ trait AvroFixable extends AvroFieldReflection {
   */
 case class AvroName(override val name: String) extends AvroNameable
 
-case class AvroTransient(useDefault: Boolean = false) extends StaticAnnotation {
+class AvroTransient(val useDefault: Boolean = false) extends StaticAnnotation with Product with Serializable {
   def this() = this(false)
+
+  override def productArity: Int = 0
+  override def productElement(n: Int): Any = throw new IndexOutOfBoundsException(n.toString)
+  override def productElementName(n: Int): String = throw new IndexOutOfBoundsException(n.toString)
+  override def productIterator: Iterator[Any] = Iterator.empty
+  override def productElementNames: Iterator[String] = Iterator.empty
+  override def productPrefix: String = "AvroTransient"
+  override def canEqual(that: Any): Boolean = that.isInstanceOf[AvroTransient]
+  override def equals(that: Any): Boolean = that match {
+    case t: AvroTransient => t.canEqual(this) && useDefault == t.useDefault
+    case _ => false
+  }
+  override def hashCode(): Int = java.lang.Boolean.hashCode(useDefault)
+  override def toString: String = if (useDefault) "AvroTransient(true)" else "AvroTransient()"
+
+  def copy(): AvroTransient = new AvroTransient(useDefault)
+  def copy(useDefault: Boolean): AvroTransient = new AvroTransient(useDefault)
+  def copy$default$1(): Boolean = useDefault
+  def _1: Boolean = useDefault
 }
 
-object AvroTransient {
+object AvroTransient extends scala.deriving.Mirror.Product {
+  type MirroredMonoType = AvroTransient
+  type MirroredType = AvroTransient
+  type MirroredLabel = "AvroTransient"
+  type MirroredElemTypes = EmptyTuple
+  type MirroredElemLabels = EmptyTuple
+
   def apply(): AvroTransient = new AvroTransient(false)
+  def apply(useDefault: Boolean): AvroTransient = new AvroTransient(useDefault)
+  def unapply(t: AvroTransient): Boolean = t != null
+  override def toString: String = "AvroTransient"
+  def fromProduct(p: Product): AvroTransient = new AvroTransient(false)
 }
 
 trait AvroNameable extends AvroFieldReflection {
