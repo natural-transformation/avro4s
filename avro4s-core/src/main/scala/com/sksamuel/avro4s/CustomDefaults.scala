@@ -14,8 +14,22 @@ import scala.collection.JavaConverters._
 import com.sksamuel.avro4s.typeutils.Annotations
 
 sealed trait CustomDefault
-case class CustomUnionDefault(className: String, values: java.util.Map[String, Any]) extends CustomDefault
-case class CustomUnionWithEnumDefault(parentName: String, default: String, value: String) extends CustomDefault
+
+/** Extends [[java.util.Map]] for JSON serialization in [[org.apache.avro.util.internal.JacksonUtils.toJson]]. */
+case class CustomUnionDefault(className: String, value: java.util.Map[String, Any])
+  extends java.util.AbstractMap[String, Any] with CustomDefault {
+  override def entrySet(): java.util.Set[java.util.Map.Entry[String, Any]] = value.entrySet()
+}
+
+/** Extends [[CharSequence]] for JSON serialization in [[org.apache.avro.util.internal.JacksonUtils.toJson]]. */
+case class CustomUnionWithEnumDefault(parentName: String, default: String, value: String)
+  extends CharSequence with CustomDefault {
+  override def toString: String = value
+  override def length: Int = value.length
+  override def charAt(index: Int): Char = value.charAt(index)
+  override def subSequence(start: Int, end: Int): CharSequence = value.subSequence(start, end)
+}
+
 case class CustomEnumDefault(value: String) extends CustomDefault
 
 object CustomDefaults {

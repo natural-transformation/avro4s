@@ -139,10 +139,9 @@ object SchemaHelper {
     }
 
     val (first, rest) = schema.getTypes.asScala.partition { t =>
-      defaultType match {
+      default match {
         case CustomUnionDefault(name, _) => name == t.getName
-        case CustomUnionWithEnumDefault(name, default, _) =>
-                 name == t.getName
+        case CustomUnionWithEnumDefault(name, _, _) => name == t.getName
         case _ => t.getType == defaultType
       }
     }
