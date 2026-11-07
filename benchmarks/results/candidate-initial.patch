@@ -1,0 +1,281 @@
+diff --git a/avro4s-core/src/main/scala/com/sksamuel/avro4s/FromRecord.scala b/avro4s-core/src/main/scala/com/sksamuel/avro4s/FromRecord.scala
+index f7cff228..a3e7410a 100644
+--- a/avro4s-core/src/main/scala/com/sksamuel/avro4s/FromRecord.scala
++++ b/avro4s-core/src/main/scala/com/sksamuel/avro4s/FromRecord.scala
+@@ -12,6 +12,8 @@ trait FromRecord[T] extends Serializable {
+ 
+ object FromRecord {
+   def apply[T](schema: Schema)(using decoder: Decoder[T]): FromRecord[T] = new FromRecord[T] {
+-    override def from(record: IndexedRecord): T = decoder.decode(schema).apply(record)
++    private lazy val decode = decoder.decode(schema)
++
++    override def from(record: IndexedRecord): T = decode(record)
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/avro4s-core/src/main/scala/com/sksamuel/avro4s/ToRecord.scala b/avro4s-core/src/main/scala/com/sksamuel/avro4s/ToRecord.scala
+index 68b1bb58..342d50ee 100644
+--- a/avro4s-core/src/main/scala/com/sksamuel/avro4s/ToRecord.scala
++++ b/avro4s-core/src/main/scala/com/sksamuel/avro4s/ToRecord.scala
+@@ -20,7 +20,10 @@ trait ToRecord[T] extends Serializable {
+ 
+ object ToRecord {
+   def apply[T](schema: Schema)(using encoder: Encoder[T]): ToRecord[T] = new ToRecord[T] {
+-    def to(t: T): Record = encoder.encode(schema).apply(t) match {
++    // Prepare on first use, then reuse the schema-specific function for every record.
++    private lazy val encode = encoder.encode(schema)
++
++    def to(t: T): Record = encode(t) match {
+       case record: Record => record
+       case output => {
+         val clazz = output.getClass
+diff --git a/avro4s-core/src/main/scala/com/sksamuel/avro4s/decoders/collections.scala b/avro4s-core/src/main/scala/com/sksamuel/avro4s/decoders/collections.scala
+index 50a42000..0872b3c9 100644
+--- a/avro4s-core/src/main/scala/com/sksamuel/avro4s/decoders/collections.scala
++++ b/avro4s-core/src/main/scala/com/sksamuel/avro4s/decoders/collections.scala
+@@ -16,7 +16,14 @@ class ArrayDecoder[T: ClassTag](decoder: Decoder[T]) extends Decoder[Array[T]] :
+     { value =>
+       value match {
+         case array: Array[_] => array.map(decodeT)
+-        case list: java.util.Collection[_] => list.asScala.map(decodeT).toArray
++        case list: java.util.Collection[_] =>
++          list.asScala match {
++            // asJavaCollection/asScala can unwrap an original Scala Set.
++            case set: scala.collection.Set[_] => set.map(decodeT).toArray
++            case values => values.iterator.map(decodeT).toArray
++          }
++        case list: scala.collection.Seq[_] => list.iterator.map(decodeT).toArray
++        // Preserve map semantics for Sets and other non-sequential Iterables.
+         case list: Iterable[_] => list.map(decodeT).toArray
+         case other => throw new Avro4sDecodingException("Unsupported array " + other, value)
+       }
+@@ -25,12 +32,38 @@ class ArrayDecoder[T: ClassTag](decoder: Decoder[T]) extends Decoder[Array[T]] :
+ 
+ trait CollectionDecoders:
+   given[T: ClassTag](using decoder: Decoder[T]): Decoder[Array[T]] = ArrayDecoder[T](decoder)
+-  given[T](using decoder: Decoder[T]): Decoder[List[T]] = iterableDecoder(decoder, _.toList)
++  given[T](using decoder: Decoder[T]): Decoder[List[T]] = iteratorDecoder(decoder, _.toList)
+   given[T](using decoder: Decoder[T]): Decoder[Seq[T]] = iterableDecoder(decoder, _.toSeq)
+   given[T](using decoder: Decoder[T]): Decoder[Set[T]] = iterableDecoder(decoder, _.toSet)
+-  given[T](using decoder: Decoder[T]): Decoder[Vector[T]] = iterableDecoder(decoder, _.toVector)
++  given[T](using decoder: Decoder[T]): Decoder[Vector[T]] = iteratorDecoder(decoder, _.toVector)
+   given[T](using decoder: Decoder[T]): Decoder[Map[String, T]] = new MapDecoder[T](decoder)
+ 
++  private def iteratorDecoder[T, C[X] <: Iterable[X]](decoder: Decoder[T],
++                                                     build: Iterator[T] => C[T]): Decoder[C[T]] =
++    new Decoder[C[T]] {
++      def decode(schema: Schema): Any => C[T] = {
++        require(schema.getType == Schema.Type.ARRAY, {
++          s"Require schema type ARRAY (was $schema)"
++        })
++        val decodeT = decoder.decode(schema.getElementType)
++        { value =>
++          value match {
++            case list: java.util.Collection[_] =>
++              list.asScala match {
++                case set: scala.collection.Set[_] => build(set.map(decodeT).iterator)
++                case values => build(values.iterator.map(decodeT))
++              }
++            case list: scala.collection.Seq[_] => build(list.iterator.map(decodeT))
++            // In particular, Set.map removes collisions before building the target.
++            case list: Iterable[_] => build(list.map(decodeT).iterator)
++            case array: Array[_] => build(array.iterator.map(decodeT))
++            case other => throw new Avro4sDecodingException("Unsupported collection type " + other, value)
++          }
++        }
++      }
++    }
++
++  // Retain the public helper's signature and eager mapping contract for callers.
+   def iterableDecoder[T, C[X] <: Iterable[X]](decoder: Decoder[T],
+                                               build: Iterable[T] => C[T]): Decoder[C[T]] =
+     new Decoder[C[T]] {
+@@ -58,7 +91,15 @@ class MapDecoder[T](decoder: Decoder[T]) extends Decoder[Map[String, T]] :
+     val decode = decoder.decode(schema.getValueType)
+     { value =>
+       value match {
+-        case map: java.util.Map[_, _] => map.asScala.toMap.map { case (k, v) => k.toString -> decode(v) }
++        case map: java.util.Map[_, _] =>
++          val builder = Map.newBuilder[String, T]
++          builder.sizeHint(map.size())
++          val entries = map.entrySet().iterator()
++          while (entries.hasNext) {
++            val entry = entries.next()
++            builder += entry.getKey.toString -> decode(entry.getValue)
++          }
++          builder.result()
+       }
+     }
+-  }
+\ No newline at end of file
++  }
+diff --git a/avro4s-core/src/main/scala/com/sksamuel/avro4s/decoders/records.scala b/avro4s-core/src/main/scala/com/sksamuel/avro4s/decoders/records.scala
+index d0b95831..4bcefee7 100644
+--- a/avro4s-core/src/main/scala/com/sksamuel/avro4s/decoders/records.scala
++++ b/avro4s-core/src/main/scala/com/sksamuel/avro4s/decoders/records.scala
+@@ -6,6 +6,7 @@ import com.sksamuel.avro4s.{Avro4sDecodingException, Decoder, Encoder, Immutable
+ import org.apache.avro.Schema
+ import org.apache.avro.generic.IndexedRecord
+ 
++import scala.collection.immutable.ArraySeq
+ import scala.jdk.CollectionConverters._
+ import scala.util.control.NonFatal
+ import org.apache.avro.generic.GenericData
+@@ -32,7 +33,8 @@ class RecordDecoder[T](ctx: magnolia1.CaseClass[Decoder, T]) extends Decoder[T]
+         values(i) = decoders(i).decode(record)
+         i += 1
+       }
+-      ctx.rawConstruct(values.toIndexedSeq)
++      // Construction only reads this fresh array; no mutable alias escapes.
++      ctx.rawConstruct(ArraySeq.unsafeWrapArray(values))
+     case enumSymbol: GenericData.EnumSymbol =>
+       ctx.rawConstruct(ctx.params)
+     case _ =>
+@@ -72,13 +74,13 @@ class SchemaFieldDecoder[T](param: magnolia1.CaseClass.Param[Decoder, T], schema
+     Option(schema.getField(fieldName))
+       .getOrElse(throw new Avro4sDecodingException(s"""Field "$fieldName" not found in schema $schema""", fieldName))
+   private val decoder = param.typeclass.asInstanceOf[Decoder[T]].decode(field.schema())
+-  private var fast: Boolean | Null = _
+ 
+   override def decode(record: IndexedRecord): Any = {
+     // testing schema based on reference equality, as value equality on schemas is probably more expensive to check
+     // than using safe decoding.
+-    if (fast == null) fast = (record.getSchema() eq schema)
+-    if (fast == true) {
++    // A prepared decoder can be reused with records from different writer schemas.
++    // Check each record rather than remembering the first record's field layout.
++    if (record.getSchema() eq schema) {
+       // known schema, use fast pre-computed position-based decoding
+       fastDecodeFieldValue(record)
+     } else {
+diff --git a/avro4s-core/src/main/scala/com/sksamuel/avro4s/encoders/collections.scala b/avro4s-core/src/main/scala/com/sksamuel/avro4s/encoders/collections.scala
+index fbfdbcaf..e86b497e 100644
+--- a/avro4s-core/src/main/scala/com/sksamuel/avro4s/encoders/collections.scala
++++ b/avro4s-core/src/main/scala/com/sksamuel/avro4s/encoders/collections.scala
+@@ -3,6 +3,7 @@ package com.sksamuel.avro4s.encoders
+ import com.sksamuel.avro4s.Encoder
+ import org.apache.avro.Schema
+ 
++import scala.collection.immutable.ArraySeq
+ import scala.jdk.CollectionConverters._
+ import scala.reflect.ClassTag
+ 
+@@ -12,7 +13,22 @@ trait CollectionEncoders:
+     override def encode(schema: Schema): C[T] => AnyRef = {
+       require(schema.getType == Schema.Type.ARRAY)
+       val elementEncoder = encoder.encode(schema.getElementType)
+-      { t => t.map(elementEncoder.apply).toList.asJava }
++      { t =>
++        t match {
++          case _: scala.collection.IndexedSeq[_] =>
++            val values = new Array[AnyRef](t.size)
++            val iterator = t.iterator
++            var i = 0
++            while (iterator.hasNext) {
++              values(i) = elementEncoder(iterator.next())
++              i += 1
++            }
++            ArraySeq.unsafeWrapArray(values).asJava
++          // Lists already map directly to the output representation, while Set.map
++          // can collapse encoded values. Preserve both paths.
++          case other => other.map(elementEncoder.apply).toList.asJava
++        }
++      }
+     }
+   }
+ 
+@@ -20,7 +36,15 @@ trait CollectionEncoders:
+     override def encode(schema: Schema): Array[T] => AnyRef = {
+       require(schema.getType == Schema.Type.ARRAY)
+       val elementEncoder = encoder.encode(schema.getElementType)
+-      { t => t.map(elementEncoder.apply).toList.asJava }
++      { t =>
++        val values = new Array[AnyRef](t.length)
++        var i = 0
++        while (i < t.length) {
++          values(i) = elementEncoder(t(i))
++          i += 1
++        }
++        ArraySeq.unsafeWrapArray(values).asJava
++      }
+     }
+   }
+ 
+@@ -35,8 +59,10 @@ class MapEncoder[T](encoder: Encoder[T]) extends Encoder[Map[String, T]] :
+   override def encode(schema: Schema): Map[String, T] => AnyRef = {
+     val encodeT = encoder.encode(schema.getValueType)
+     { value =>
+-      val map = new java.util.HashMap[String, Any]
++      // Account for HashMap's default 0.75 load factor without overflowing Int.
++      val capacity = math.min((value.size.toLong * 4 + 2) / 3, Int.MaxValue.toLong).toInt
++      val map = new java.util.HashMap[String, Any](capacity)
+       value.foreach { case (k, v) => map.put(k, encodeT.apply(v)) }
+       map
+     }
+-  }
+\ No newline at end of file
++  }
+diff --git a/avro4s-core/src/main/scala/com/sksamuel/avro4s/encoders/records.scala b/avro4s-core/src/main/scala/com/sksamuel/avro4s/encoders/records.scala
+index 8995d09b..80404390 100644
+--- a/avro4s-core/src/main/scala/com/sksamuel/avro4s/encoders/records.scala
++++ b/avro4s-core/src/main/scala/com/sksamuel/avro4s/encoders/records.scala
+@@ -5,6 +5,7 @@ import com.sksamuel.avro4s.{Avro4sConfigurationException, Encoder, ImmutableReco
+ import magnolia1.CaseClass
+ import org.apache.avro.Schema
+ 
++import scala.collection.immutable.ArraySeq
+ import scala.collection.mutable
+ import scala.jdk.CollectionConverters._
+ import scala.reflect.ClassTag
+@@ -42,7 +43,8 @@ class RecordEncoder[T](ctx: magnolia1.CaseClass[Encoder, T]) extends Encoder[T]
+       values(i) = encoders(i).encode(t)
+       i += 1
+     }
+-    ImmutableRecord(schema, values.toSeq)
++    // This fresh array is owned by the record and is never mutated after wrapping.
++    ImmutableRecord(schema, ArraySeq.unsafeWrapArray(values))
+   }
+ }
+ 
+@@ -67,4 +69,4 @@ class FieldEncoder[T](param: magnolia1.CaseClass.Param[Encoder, T], schema: Sche
+ //            update: SchemaUpdate,
+ //            record: Schema,
+ //            ctx: CaseClass[Encoder, T],
+-//            fieldMapper: FieldMapper): (Field, ValueEncoder) = {
+\ No newline at end of file
++//            fieldMapper: FieldMapper): (Field, ValueEncoder) = {
+diff --git a/build.sbt b/build.sbt
+index 4d03fa70..040faf86 100644
+--- a/build.sbt
++++ b/build.sbt
+@@ -49,12 +49,6 @@ val benchmarks = project
+   .enablePlugins(JmhPlugin)
+   .settings(
+     Test / fork := true,
+-    publishArtifact := false,
+-    libraryDependencies ++= Seq(
+-      "pl.project13.scala" % "sbt-jmh-extras" % SbtJmhVersion,
+-      "org.openjdk.jmh" % "jmh-core" % JmhVersion,
+-      "org.openjdk.jmh" % "jmh-generator-asm" % JmhVersion,
+-      "org.openjdk.jmh" % "jmh-generator-bytecode" % JmhVersion,
+-      "org.openjdk.jmh" % "jmh-generator-reflection" % JmhVersion
+-    )
+-  )
+\ No newline at end of file
++    // sbt-jmh supplies a consistent set of JMH runtime/generator dependencies.
++    publishArtifact := false
++  )
+diff --git a/project/Build.scala b/project/Build.scala
+index fda6ac0e..8c0dce20 100644
+--- a/project/Build.scala
++++ b/project/Build.scala
+@@ -14,8 +14,6 @@ object Build extends AutoPlugin {
+     val Json4sVersion = "4.0.6"
+     val CatsVersion = "2.10.0"
+     val MagnoliaVersion = "1.3.20"
+-    val SbtJmhVersion = "0.4.8"
+-    val JmhVersion = "1.32"
+   }
+ 
+   import autoImport._

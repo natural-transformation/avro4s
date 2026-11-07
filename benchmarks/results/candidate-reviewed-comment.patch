@@ -1,0 +1,11 @@
+--- a/avro4s-core/src/main/scala/com/sksamuel/avro4s/decoders/records.scala
++++ b/avro4s-core/src/main/scala/com/sksamuel/avro4s/decoders/records.scala
+@@ -32,7 +32,7 @@
+         values(i) = decoders(i).decode(record)
+         i += 1
+       }
+-      // Magnolia's array overload wraps this fresh array without copying it.
++      // The array overload avoids the Seq wrapper and ProductCaseClass's Seq.toArray copy.
+       ctx.rawConstruct(values)
+     case enumSymbol: GenericData.EnumSymbol =>
+       ctx.rawConstruct(ctx.params)
