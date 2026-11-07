@@ -20,7 +20,10 @@ trait ToRecord[T] extends Serializable {
 
 object ToRecord {
   def apply[T](schema: Schema)(using encoder: Encoder[T]): ToRecord[T] = new ToRecord[T] {
-    def to(t: T): Record = encoder.encode(schema).apply(t) match {
+    // Prepare once per instance, including after deserialization; prepared state may be process-local.
+    @transient private lazy val encode = encoder.encode(schema)
+
+    def to(t: T): Record = encode(t) match {
       case record: Record => record
       case output => {
         val clazz = output.getClass

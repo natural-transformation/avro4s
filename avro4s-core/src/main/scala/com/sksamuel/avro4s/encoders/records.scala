@@ -5,6 +5,7 @@ import com.sksamuel.avro4s.{Avro4sConfigurationException, Encoder, ImmutableReco
 import magnolia1.CaseClass
 import org.apache.avro.Schema
 
+import scala.collection.immutable.ArraySeq
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 import scala.reflect.ClassTag
@@ -42,7 +43,8 @@ class RecordEncoder[T](ctx: magnolia1.CaseClass[Encoder, T]) extends Encoder[T] 
       values(i) = encoders(i).encode(t)
       i += 1
     }
-    ImmutableRecord(schema, values.toSeq)
+    // This fresh array is owned by the record and is never mutated after wrapping.
+    ImmutableRecord(schema, ArraySeq.unsafeWrapArray(values))
   }
 }
 

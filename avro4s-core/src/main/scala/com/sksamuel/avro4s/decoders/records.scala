@@ -32,7 +32,8 @@ class RecordDecoder[T](ctx: magnolia1.CaseClass[Decoder, T]) extends Decoder[T] 
         values(i) = decoders(i).decode(record)
         i += 1
       }
-      ctx.rawConstruct(values.toIndexedSeq)
+      // The array overload avoids the Seq wrapper and ProductCaseClass's Seq.toArray copy.
+      ctx.rawConstruct(values)
     case enumSymbol: GenericData.EnumSymbol =>
       ctx.rawConstruct(ctx.params)
     case _ =>
@@ -72,13 +73,13 @@ class SchemaFieldDecoder[T](param: magnolia1.CaseClass.Param[Decoder, T], schema
     Option(schema.getField(fieldName))
       .getOrElse(throw new Avro4sDecodingException(s"""Field "$fieldName" not found in schema $schema""", fieldName))
   private val decoder = param.typeclass.asInstanceOf[Decoder[T]].decode(field.schema())
-  private var fast: Boolean | Null = _
 
   override def decode(record: IndexedRecord): Any = {
     // testing schema based on reference equality, as value equality on schemas is probably more expensive to check
     // than using safe decoding.
-    if (fast == null) fast = (record.getSchema() eq schema)
-    if (fast == true) {
+    // A prepared decoder can be reused with records from different writer schemas.
+    // Check each record rather than remembering the first record's field layout.
+    if (record.getSchema() eq schema) {
       // known schema, use fast pre-computed position-based decoding
       fastDecodeFieldValue(record)
     } else {
