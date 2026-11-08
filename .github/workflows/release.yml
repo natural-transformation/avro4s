@@ -15,19 +15,25 @@ on:
     types: [published]
 
 jobs:
+  validate:
+    uses: ./.github/workflows/java-validation.yml
+    with:
+      ref: ${{ github.event.inputs.branch || github.ref }}
+
   scala-3:
+    needs: validate
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository for workflow_dispatch
         if: github.event_name == 'workflow_dispatch'
-        uses: actions/checkout@v3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           ref: ${{ github.event.inputs.branch }}
 
       - name: Check out repository for release
         if: github.event_name == 'release'
-        uses: actions/checkout@v3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -46,12 +52,12 @@ jobs:
           fi
 
       - name: Install Nix (with flake support)
-        uses: cachix/install-nix-action@v20
+        uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31.11.3
         with:
           extra_nix_config: sandbox = true
 
       - name: Configure Cachix
-        uses: cachix/cachix-action@v10
+        uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
         with:
           name: avro4s
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
@@ -59,7 +65,7 @@ jobs:
 
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v3
+        uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
         with:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PGP_PASSPHRASE }}

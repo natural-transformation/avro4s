@@ -30,6 +30,9 @@ separate from codec changes when attributing performance results.
 
 ## Maintenance
 
+- Coordinate an sbt-sonatype upgrade with sbtix: their newer versions currently
+  select incompatible uPickle major versions in the shared plugin classpath.
+  Preserve the existing publishing commands and validate the release path.
 - Keep benchmark compilation and fixture smoke checks in the Java 21/25 CI matrix.
   Use a controlled machine for performance comparisons; shared-runner timings
   should not become pass/fail performance thresholds.
