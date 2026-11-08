@@ -87,8 +87,8 @@
       "sha256": "2EC8C3BF5A6D7C89BE8620116A2FC973F7DDA1AD0261AD393C4D4726EDFD3DCB"
     },
     {
-      "url": "https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.25.4/log4j-slf4j-impl-2.25.4.jar",
-      "sha256": "7AC68A0AFCC83D54F48D116D79370A43F0A2A6B71B5C1D6DDA943BB6A95DDBAA"
+      "url": "https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.26.1/log4j-slf4j-impl-2.26.1.jar",
+      "sha256": "1AFC7B00DB35D6BDC309B35CEE01DD114B292C2D903975F2987DA870B24CEA6E"
     },
     {
       "url": "https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.4.1/checker-qual-3.4.1.jar",

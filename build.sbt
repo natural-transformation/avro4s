@@ -49,6 +49,8 @@ val benchmarks = project
   .enablePlugins(JmhPlugin)
   .settings(
     Test / fork := true,
+    // The schema benchmark derives a six-level graph at each invocation.
+    Compile / scalacOptions += "-Xmax-inlines:256",
     // sbt-jmh supplies a consistent set of JMH runtime/generator dependencies.
     publishArtifact := false
   )

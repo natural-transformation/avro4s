@@ -44,6 +44,7 @@ jobs:
               cd "$revision"
               export SBT_BOOT="$RUNNER_TEMP/benchmark-$revision-$JDK"
               nix develop ".#java$JDK" --command sbt -batch -Dsbt.server.autostart=false \
+                'set benchmarks / Compile / scalacOptions += "-Xmax-inlines:256"' \
                 'benchmarks/Jmh/run -wi 3 -i 5 -w 1s -r 1s -f 2 -prof gc -rf json -rff target/schema-benchmark.json benchmarks.performance.SchemaDerivationBenchmarks.*'
             )
           done
