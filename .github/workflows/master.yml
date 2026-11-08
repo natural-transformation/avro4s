@@ -13,6 +13,8 @@ on:
 jobs:
   validate:
     uses: ./.github/workflows/java-validation.yml
+    secrets:
+      CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
   build_and_publish:
     needs: validate

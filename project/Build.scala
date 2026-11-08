@@ -15,6 +15,8 @@ object Build extends AutoPlugin {
     val CatsVersion = "2.13.0"
     val MagnoliaVersion = "1.3.24"
     val KafkaVersion = "4.3.2"
+    // Keep >= AvroVersion's Jackson BOM (1.12.2 uses 2.22.1). Recheck when Avro
+    // changes: Maven's nearest-wins resolution can otherwise retain an older pin.
     val JacksonVersion = "2.22.4"
     val exportBootstrapClasspath = taskKey[File]("Record the sbt launcher's actual bootstrap classpath for the security audit")
   }
@@ -81,7 +83,8 @@ object Build extends AutoPlugin {
     // Keep both bytecode and JDK API usage compatible with Java 21 when built on 25.
     scalacOptions += "-release:21",
     javacOptions := Seq("--release", "21"),
-    // Compiler / Scaladoc tools are resolved in separate configurations.
+    // These also patch the separate compiler/Scaladoc configurations. Keep until
+    // an upstream Scala update resolves safe versions; they are audited in CI.
     dependencyOverrides ++= Seq(
       "com.fasterxml.jackson.core" % "jackson-core" % JacksonVersion,
       "com.fasterxml.jackson.core" % "jackson-databind" % JacksonVersion,

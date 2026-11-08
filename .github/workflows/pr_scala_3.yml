@@ -6,7 +6,8 @@ on:
       - 'doc/**'
       - 'docs/**'
       - '*.md'
-    branches: [master]
+    branches:
+      - master
 
 permissions:
   contents: read

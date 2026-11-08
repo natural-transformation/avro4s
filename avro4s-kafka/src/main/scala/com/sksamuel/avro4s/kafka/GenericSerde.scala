@@ -18,7 +18,9 @@ class GenericSerde[T >: Null : SchemaFor : Encoder : Decoder](avroFormat: AvroFo
   with Serializer[T]
   with Serializable {
 
-  val schema: Schema = AvroSchema[T]
+  // Binary/JSON messages use the in-memory graph, without exporting its schema.
+  // Data containers additionally require a losslessly serializable schema.
+  val schema: Schema = if (avroFormat == AvroFormat.Data) AvroSchema[T] else SchemaFor[T].schema
 
   override def serializer(): Serializer[T] = this
 

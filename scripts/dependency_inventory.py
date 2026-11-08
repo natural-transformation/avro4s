@@ -5,6 +5,7 @@ Run after a clean build, including benchmarks/update. Missing reports or JAR
 coordinates are errors: a partial inventory must never look like a clean scan.
 """
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -17,7 +18,7 @@ BOOT_GROUPS = {
     "jna": "net.java.dev.jna", "jna-platform": "net.java.dev.jna",
     "checker-qual": "org.checkerframework", "caffeine": "com.github.ben-manes.caffeine",
     "reactive-streams": "org.reactivestreams", "disruptor": "com.lmax",
-    "scala-library": "org.scala-lang", "scala-reflect": "org.scala-lang",
+    "scala-library": "org.scala-lang", "scala-reflect": "org.scala-lang", "scala-compiler": "org.scala-lang",
 }
 
 
@@ -76,40 +77,50 @@ def jar_modules(path):
             values = dict(line.split("=", 1) for line in jar.read(name).decode().splitlines()
                           if "=" in line and not line.startswith(("#", "!")))
             modules.add((values["groupId"] + ":" + values["artifactId"], values["version"]))
-        if modules and "META-INF/MANIFEST.MF" not in jar.namelist():
-            return modules
-        text = jar.read("META-INF/MANIFEST.MF").decode().replace("\r\n", "\n").replace("\n ", "")
+        text = jar.read("META-INF/MANIFEST.MF").decode() if "META-INF/MANIFEST.MF" in jar.namelist() else ""
+        text = text.replace("\r\n", "\n").replace("\n ", "")
         attrs = dict(line.split(": ", 1) for line in text.splitlines() if ": " in line)
     version = attrs.get("Implementation-Version", attrs.get("Specification-Version", ""))
-    if path.stem.startswith(("scala-library", "scala-reflect")):
+    if path.stem.startswith(("scala-library", "scala-reflect", "scala-compiler")):
         version = attrs.get("Bundle-Version", version).split(".v")[0]
     if path.stem.startswith(("jna-", "jna-platform-")):
         version = attrs.get("Bundle-Version", version)
     if not version:
         version = attrs.get("Bundle-Version", "")
     artifact = path.stem.removesuffix("-" + version)
+    # The sbt distribution renames org.scala-sbt:launcher to sbt-launch.jar.
+    if artifact == "sbt-launch" and attrs.get("Implementation-Title") == "Launcher Implementation":
+        artifact = "launcher"
     if artifact.startswith("org.scala-sbt-compiler-bridge_"):
         artifact = artifact.removeprefix("org.scala-sbt-").split("-" + version + "-bin_")[0]
     group = attrs.get("Implementation-Vendor-Id", attrs.get("Specification-Vendor", ""))
     group = BOOT_GROUPS.get(artifact, group)
     if (not re.fullmatch(r"[\w-]+(?:\.[\w-]+)+", group) or not version
             or artifact == path.stem and re.search(r"-\d", artifact)):
-        if modules:
+        if any(path.stem in (name.split(":")[1], name.split(":")[1] + "-" + v) for name, v in modules):
             return modules
         raise ValueError("Cannot identify bootstrap JAR: " + str(path))
     return modules | {(group + ":" + artifact, version)}
 
 
-def check_bootstrap_classpath(boot, classpath):
+def check_bootstrap_classpath(boot, classpath, expected=None):
     paths = [Path(line).resolve() for line in classpath.read_text().splitlines() if line]
     if not paths:
         raise ValueError("Empty actual sbt bootstrap classpath")
     for path in paths:
         if not path.is_file() or not path.is_relative_to(boot.resolve()):
             raise ValueError("sbt used a bootstrap JAR outside the audited directory: " + str(path))
+        if expected is not None:
+            relative = path.relative_to(boot.resolve())
+            if relative.parts[0] != expected.name + "-v2":
+                raise ValueError("sbt used an unexpected bootstrap generation: " + str(path))
+            reference = expected.joinpath(*relative.parts[1:])
+            if (not reference.is_file() or
+                    hashlib.sha256(reference.read_bytes()).digest() != hashlib.sha256(path.read_bytes()).digest()):
+                raise ValueError("sbt bootstrap JAR differs from the pinned Nix artifact: " + str(path))
 
 
-def collect(root, boot):
+def collect(root, boot, launcher=None):
     sources = []
     for project in PROJECTS:
         reports = sorted((root / project / "target").glob("**/update/**/output"))
@@ -126,6 +137,8 @@ def collect(root, boot):
     for jar in jars:
         modules.update(jar_modules(jar))
     sources.append(("sbt-bootstrap", modules))
+    if launcher is not None:
+        sources.append(("sbt-launcher", jar_modules(launcher)))
     return {"results": [
         {"source": {"path": source, "type": "sbt"},
          "packages": [{"package": {"ecosystem": "Maven", "name": name, "version": version}}
@@ -140,9 +153,11 @@ def main():
     parser.add_argument("--boot", type=Path, required=True)
     parser.add_argument("--classpath", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--expected", type=Path, required=True)
+    parser.add_argument("--launcher", type=Path, required=True)
     args = parser.parse_args()
-    check_bootstrap_classpath(args.boot, args.classpath)
-    inventory = collect(args.root, args.boot)
+    check_bootstrap_classpath(args.boot, args.classpath, args.expected)
+    inventory = collect(args.root, args.boot, args.launcher)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(inventory, indent=2) + "\n")
     packages = {(p["package"]["name"], p["package"]["version"])

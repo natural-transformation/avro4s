@@ -28,7 +28,6 @@
             sbt = import ./nix/sbt.nix {
               pkgs = super;
               jre = jdk;
-              bootstrapLock = import ./sbt-bootstrap-repo.nix;
             };
           }) ];
         };
@@ -40,9 +39,20 @@
         };
         # Get the sbtix CLI tool from the flake for devShell
         sbtixCli = inputs'.sbtix.packages.sbtix;
-        javaShell = version: let tools = javaPkgs version; in tools.mkShell {
-          nativeBuildInputs = [ tools.sbt sbtixCli tools.jdk tools.python3 tools.osv-scanner ];
+        javaShell = version: let
+          tools = javaPkgs version;
+          managedSbtix = import ./nix/sbtix.nix {
+            pkgs = tools;
+            original = sbtixCli;
+            originalSbt = sbtix.inputs.nixpkgs.legacyPackages.${system}.sbt;
+            sbt = tools.sbt;
+          };
+        in tools.mkShell {
+          nativeBuildInputs = [ tools.sbt managedSbtix tools.jdk tools.python3 tools.osv-scanner tools.gnupg ];
           JAVA_HOME = "${tools.jdk}";
+          AVRO4S_SBT_BOOT_SOURCE = "${tools.sbt.bootstrap}";
+          AVRO4S_SBT_LAUNCH_JAR = tools.sbt.launcher;
+          # Set NIX_PATH so nix-build in build.sh uses the same packages as nix build.
           NIX_PATH = "nixpkgs=${inputs.nixpkgs}";
         };
       in {

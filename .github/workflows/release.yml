@@ -15,38 +15,50 @@ on:
     types: [published]
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      sha: ${{ steps.commit.outputs.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.inputs.branch || github.sha }}
+      - id: commit
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
   validate:
+    needs: prepare
     uses: ./.github/workflows/java-validation.yml
     with:
-      ref: ${{ github.event.inputs.branch || github.ref }}
+      ref: ${{ needs.prepare.outputs.sha }}
+    secrets:
+      CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
   scala-3:
-    needs: validate
+    needs: [prepare, validate]
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository for workflow_dispatch
-        if: github.event_name == 'workflow_dispatch'
+      - name: Check out the validated commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-          ref: ${{ github.event.inputs.branch }}
-
-      - name: Check out repository for release
-        if: github.event_name == 'release'
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
+          ref: ${{ needs.prepare.outputs.sha }}
 
       - name: Determine release version
         id: set_version
+        env:
+          REQUESTED_VERSION: ${{ github.event.inputs.version }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
           # If triggered by workflow_dispatch, use the input 'version';
           # otherwise, derive version from the GitHub release tag, stripping any leading "v".
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ]; then
-            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] && [ -n "$REQUESTED_VERSION" ]; then
+            echo "version=$REQUESTED_VERSION" >> "$GITHUB_OUTPUT"
           else
             # Remove leading 'v' from tag, e.g., 'v5.1.2' becomes '5.1.2'
-            TAG="${{ github.event.release.tag_name }}"
+            TAG="$RELEASE_TAG"
             TAG="${TAG#v}"
             echo "version=$TAG" >> $GITHUB_OUTPUT
           fi

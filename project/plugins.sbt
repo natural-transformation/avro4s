@@ -14,7 +14,6 @@ addSbtPlugin("pl.project13.scala" % "sbt-jmh" % "0.4.8")
 // inventory audits this build classpath as well as the published library graph.
 dependencyOverrides ++= Seq(
   "ch.qos.logback" % "logback-core" % "1.5.34",
-  "ch.qos.logback" % "logback-classic" % "1.5.34",
   "com.google.guava" % "guava" % "33.8.0-jre",
   "com.squareup.okhttp3" % "okhttp" % "4.12.0",
   "com.squareup.okio" % "okio" % "3.6.0",

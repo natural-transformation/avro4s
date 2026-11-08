@@ -45,7 +45,7 @@ class DependencyInventoryTest(unittest.TestCase):
 
     def test_jar_properties_include_shaded_maven_dependencies(self):
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "test.jar"
+            path = Path(directory) / "outer-1.2.3.jar"
             with zipfile.ZipFile(path, "w") as jar:
                 for name in ["outer", "embedded"]:
                     jar.writestr("META-INF/maven/example.org/" + name + "/pom.properties",
@@ -111,12 +111,38 @@ class DependencyInventoryTest(unittest.TestCase):
             classpath.write_text(str(actual) + "\n")
             with self.assertRaises(ValueError):
                 check_bootstrap_classpath(boot, classpath)
+
             actual.rename(boot / actual.name)
             classpath.write_text(str(boot / actual.name) + "\n")
             check_bootstrap_classpath(boot, classpath)
             classpath.write_text("")
             with self.assertRaises(ValueError):
                 check_bootstrap_classpath(boot, classpath)
+
+    def test_bootstrap_path_is_not_enough_when_contents_differ(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "pinned-boot"
+            source.mkdir()
+            (source / "library.jar").write_bytes(b"pinned")
+            boot = root / "boot"
+            actual = boot / (source.name + "-v2") / "library.jar"
+            actual.parent.mkdir(parents=True)
+            actual.write_bytes(b"pinned")
+            classpath = root / "classpath.txt"
+            classpath.write_text(str(actual) + "\n")
+            check_bootstrap_classpath(boot, classpath, source)
+            actual.write_bytes(b"different")
+            with self.assertRaises(ValueError):
+                check_bootstrap_classpath(boot, classpath, source)
+
+    def test_distribution_launcher_uses_its_published_coordinate(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "sbt-launch.jar"
+            with zipfile.ZipFile(path, "w") as jar:
+                jar.writestr("META-INF/MANIFEST.MF", "Implementation-Title: Launcher Implementation\n"
+                             "Implementation-Version: 1.6.2\nImplementation-Vendor-Id: org.scala-sbt\n")
+            self.assertEqual(jar_modules(path), {("org.scala-sbt:launcher", "1.6.2")})
 
 
 if __name__ == "__main__":

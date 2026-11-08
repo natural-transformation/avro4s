@@ -7,6 +7,7 @@ dependencyOverrides ++= Seq(
   "io.get-coursier" % "lm-coursier-shaded_2.12" % "2.1.14",
   "org.apache.logging.log4j" % "log4j-api" % "2.26.1",
   "org.apache.logging.log4j" % "log4j-core" % "2.26.1",
+  "org.apache.logging.log4j" % "log4j-slf4j-impl" % "2.26.1",
   "org.jsoup" % "jsoup" % "1.24.1"
 ) ++ Seq("jline", "jline-builtins", "jline-reader", "jline-terminal",
   "jline-terminal-jni", "jline-terminal-jna", "jline-native")

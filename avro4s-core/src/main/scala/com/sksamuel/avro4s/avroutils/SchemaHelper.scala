@@ -12,8 +12,9 @@ object SchemaHelper {
   import scala.collection.JavaConverters._
 
   // Avro 1.12 serialization can emit a name reference without rejecting a
-  // conflicting definition. Validate the complete derived graph before it can
-  // silently lose the second definition when serialized.
+  // conflicting definition. Export/container boundaries validate the complete
+  // graph once. As in Avro 1.11, equivalence uses Schema.equals (not metadata
+  // identity: e.g. doc/alias differences do not make definitions unequal).
   private[avro4s] def validateNames(root: Schema): Unit = {
     val seen = new java.util.IdentityHashMap[Schema, java.lang.Boolean]()
     val names = new java.util.HashMap[String, Schema]()
