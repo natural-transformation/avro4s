@@ -2,7 +2,7 @@ from pathlib import Path
 import tempfile
 import unittest
 import zipfile
-from dependency_inventory import collect, jar_modules, resolved_modules
+from dependency_inventory import check_bootstrap_classpath, collect, jar_modules, resolved_modules
 
 
 class DependencyInventoryTest(unittest.TestCase):
@@ -66,6 +66,24 @@ class DependencyInventoryTest(unittest.TestCase):
             with zipfile.ZipFile(path, "w") as jar:
                 jar.writestr("META-INF/MANIFEST.MF", "Bundle-Version: 2.12.21.v20251211-VFINAL\n")
             self.assertEqual(jar_modules(path), {("org.scala-lang:scala-library", "2.12.21")})
+
+    def test_actual_classpath_must_be_inside_the_scanned_directory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            boot = root / "boot"
+            boot.mkdir()
+            actual = root / "outside.jar"
+            actual.touch()
+            classpath = root / "classpath.txt"
+            classpath.write_text(str(actual) + "\n")
+            with self.assertRaises(ValueError):
+                check_bootstrap_classpath(boot, classpath)
+            actual.rename(boot / actual.name)
+            classpath.write_text(str(boot / actual.name) + "\n")
+            check_bootstrap_classpath(boot, classpath)
+            classpath.write_text("")
+            with self.assertRaises(ValueError):
+                check_bootstrap_classpath(boot, classpath)
 
 
 if __name__ == "__main__":

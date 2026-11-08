@@ -21,6 +21,27 @@ shell and the publication baseline. Both Java and Scala compilation use a Java
 | sbt-sonatype | 3.11.0 | 3.11.0 (retained; audited) |
 | sbt-jmh | 0.4.7 | 0.4.8 |
 
+The first full OSV scan also found vulnerable transitive dependencies. These
+require explicit security updates even with the direct versions above:
+
+| Transitive dependency | Audited candidate before remediation | Selected fix |
+| --- | --- | --- |
+| Jackson core / databind | 2.21.2, 2.22.1 | 2.22.4 |
+| Logback core / classic | 1.3.14 | 1.5.34 |
+| Guava | 16.0.1 | 33.8.0-jre |
+| OkHttp / Okio | 3.14.0 / 1.17.2 | 4.12.0 / 3.6.0 |
+| Apache HttpClient | 4.3.5 | 4.5.14 |
+| Bouncy Castle | 1.78.1 | 1.86 |
+| MessagePack | 0.9.8 | 0.9.12 |
+| JLine | 3.27.1, 3.29.0 | 3.30.15 |
+| jsoup | 1.18.1, 1.22.2 | 1.23.2 embedded; 1.24.1 external |
+| Log4j API / core in sbt | 2.25.4 | 2.26.1 |
+| sbt Coursier integration | 2.1.13 | 2.1.14 (embeds patched jsoup) |
+
+Jackson requirements are also direct published dependencies, so the generated
+POM carries the patched versions to consumers. Compiler/documentation-tool and
+publishing-plugin overrides stay in their respective build configurations.
+
 The old external sbt-dependency-graph plugin is removed: sbt already supplies
 dependency graph commands. Scala stays on the existing 3.3 LTS line, and json4s
 stays on its stable 4.0 line rather than selecting a milestone release.
@@ -96,6 +117,23 @@ coordinates in OSV at scan time. It cannot guarantee the absence of undiscovered
 vulnerabilities and is not an audit of every native package in the Nix closure.
 The JDK and tooling closure is pinned through `flake.lock` and must be refreshed
 alongside upstream security releases.
+
+The Java 21 package in that nixpkgs snapshot predates the October security
+release. `nix/jdk21.nix` uses its existing Temurin packaging with the official
+[21.0.13+9 release](https://github.com/adoptium/temurin21-binaries/releases/tag/jdk-21.0.13%2B9)
+assets and SHA-256 hashes for all three supported platforms. Java 25 uses the
+pinned nixpkgs OpenJDK build. The actual versions are recorded in CI artifacts.
+
+`nix/sbt.nix` constructs sbt's real startup classpath from the resolved bootstrap
+lock, then copies it into a writable, content-addressed cache before launching
+sbt. Ordinary project `dependencyOverrides` cannot change that startup classpath.
+The bootstrap also updates Coursier itself: its shaded jsoup copy cannot be fixed
+by adding a newer, separate jsoup JAR. The audit inventories both outer artifacts
+and embedded Maven metadata. Use the Nix shell to obtain these build-tool fixes;
+an independently installed sbt launcher is outside this managed environment.
+The audit exports the launcher's actual classpath and fails if any of those JARs
+is outside the scanned bootstrap directory; merely seeding a clean, unused cache
+cannot satisfy the check.
 
 ## Refreshing locks
 

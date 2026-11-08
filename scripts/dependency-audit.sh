@@ -4,11 +4,12 @@ set -euo pipefail
 
 # Resolve independently so a failed compatibility test cannot hide scan results.
 sbt -batch -Dsbt.boot.directory="$SBT_BOOT" -Dsbt.server.autostart=false \
-  update 'benchmarks/update'
+  update 'benchmarks/update' exportBootstrapClasspath
 python3 -m unittest discover -s scripts -p 'test_*.py'
 mkdir -p target/dependency-audit
 java -version 2> target/dependency-audit/java-version.txt
 python3 scripts/dependency_inventory.py --boot "$SBT_BOOT" \
+  --classpath target/dependency-audit/bootstrap-classpath.txt \
   --output target/dependency-audit/osv-scanner.json
 osv-scanner scan source \
   --lockfile=osv-scanner:target/dependency-audit/osv-scanner.json \

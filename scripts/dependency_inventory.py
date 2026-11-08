@@ -77,6 +77,15 @@ def jar_modules(path):
     return modules | {(group + ":" + artifact, version)}
 
 
+def check_bootstrap_classpath(boot, classpath):
+    paths = [Path(line).resolve() for line in classpath.read_text().splitlines() if line]
+    if not paths:
+        raise ValueError("Empty actual sbt bootstrap classpath")
+    for path in paths:
+        if not path.is_file() or not path.is_relative_to(boot.resolve()):
+            raise ValueError("sbt used a bootstrap JAR outside the audited directory: " + str(path))
+
+
 def collect(root, boot):
     sources = []
     for project in PROJECTS:
@@ -106,8 +115,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path("."))
     parser.add_argument("--boot", type=Path, required=True)
+    parser.add_argument("--classpath", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    check_bootstrap_classpath(args.boot, args.classpath)
     inventory = collect(args.root, args.boot)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(inventory, indent=2) + "\n")

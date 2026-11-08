@@ -11,7 +11,7 @@ let
     mkdir -p "$out/scala-${scala}/lib" "$out/scala-${scala}/org.scala-sbt/sbt/${sbtVersion}"
   '' + lib.concatStringsSep "\n" (lib.mapAttrsToList (path: artifact:
     let
-      // sbtix also emits Ivy aliases for the same Maven artifact.
+      # sbtix also emits Ivy aliases for the same Maven artifact.
       name = builtins.baseNameOf artifact.url;
       jar = pkgs.fetchurl { inherit (artifact) url sha256; };
       scalaJar = lib.findFirst (module: name == "${module}-${scala}.jar") null

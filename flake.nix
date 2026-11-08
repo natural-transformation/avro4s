@@ -19,10 +19,17 @@
       let
         javaPkgs = version: import nixpkgs {
           inherit system;
-          overlays = [ (self: super: let jdk = super."jdk${version}"; in {
+          overlays = [ (self: super: let
+            jdk = if version == "21" then import ./nix/jdk21.nix { pkgs = super; }
+              else super."jdk${version}";
+          in {
             inherit jdk;
             jre = jdk;
-            sbt = super.sbt.override { jre = jdk; };
+            sbt = import ./nix/sbt.nix {
+              pkgs = super;
+              jre = jdk;
+              bootstrapLock = import ./sbt-bootstrap-repo.nix;
+            };
           }) ];
         };
         newPkgs = javaPkgs "21";

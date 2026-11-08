@@ -16,6 +16,7 @@ object Build extends AutoPlugin {
     val MagnoliaVersion = "1.3.24"
     val KafkaVersion = "4.3.2"
     val JacksonVersion = "2.22.4"
+    val exportBootstrapClasspath = taskKey[File]("Record the sbt launcher's actual bootstrap classpath for the security audit")
   }
 
   import autoImport._
@@ -62,6 +63,14 @@ object Build extends AutoPlugin {
   override def projectSettings = commonSettings ++ publishingSettings 
   
   val commonSettings = Seq(
+    exportBootstrapClasspath / aggregate := false,
+    exportBootstrapClasspath := {
+      val provider = appConfiguration.value.provider
+      val jars = (provider.mainClasspath.toSeq ++ provider.scalaProvider.jars.toSeq).distinct
+      val output = (LocalRootProject / baseDirectory).value / "target" / "dependency-audit" / "bootstrap-classpath.txt"
+      IO.writeLines(output, jars.map(_.getAbsolutePath))
+      output
+    },
     organization       := org,
     scalaVersion := "3.3.9",
     // For reproducible builds, we avoid `mavenLocal` unless explicitly enabled.
