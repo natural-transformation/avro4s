@@ -30,6 +30,11 @@ separate from codec changes when attributing performance results.
 
 ## Maintenance
 
+- Retire the custom sbt bootstrap once an upstream sbt release includes the
+  patched Log4j, JLine and shaded Coursier dependencies. Prove the replacement
+  with the actual-classpath audit before removing the Nix wrapper.
+- Return Java 21 to the standard nixpkgs package once it includes the October
+  2026 security release or newer; keep both JDK matrix jobs passing.
 - Coordinate an sbt-sonatype upgrade with sbtix: their newer versions currently
   select incompatible uPickle major versions in the shared plugin classpath.
   Preserve the existing publishing commands and validate the release path.

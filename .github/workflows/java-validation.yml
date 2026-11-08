@@ -35,7 +35,7 @@ jobs:
           SBT_BOOT: ${{ runner.temp }}/sbt-boot
         run: nix develop .#java${{ matrix.java }} --command bash scripts/dependency-audit.sh
       - name: Verify offline Nix build
-        if: matrix.java == '21'
+        if: ${{ !cancelled() && matrix.java == '21' }}
         run: nix build
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()

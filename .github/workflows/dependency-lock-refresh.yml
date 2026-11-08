@@ -19,9 +19,7 @@ jobs:
       - name: Refresh Nix packages
         run: nix flake update nixpkgs
       - name: Refresh resolved Maven locks through sbtix
-        # Bootstrap the new classpath manifest with the last working Nix shell.
-        # Restore the local shell after the generated manifest is checked in.
-        run: nix develop github:natural-transformation/avro4s/99a71edb08c6668cbfb9bf826f889b6bfc1e179b#java21 --command bash scripts/refresh-dependency-locks.sh
+        run: nix develop .#java21 --command bash scripts/refresh-dependency-locks.sh
       - name: Package lock changes for review
         if: always()
         run: |

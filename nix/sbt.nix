@@ -4,10 +4,13 @@ let
   versioning = builtins.head bootstrapLock.versioning;
   scala = versioning.scalaVersion;
   sbtVersion = versioning.sbtVersion;
-  jars = lib.filterAttrs (path: _: lib.hasSuffix ".jar" path
-    && !(lib.hasSuffix "-sources.jar" path)
-    && !(lib.hasSuffix "-javadoc.jar" path)) bootstrapLock.artifacts;
-  boot = pkgs.runCommand "avro4s-sbt-${sbtVersion}-boot" {} (''
+  selectedUrls = builtins.fromJSON (builtins.readFile ../sbt-bootstrap-jars.json);
+  # Offline metadata locks also include optional dependencies and classifiers.
+  # Only the resolved compile classpath belongs in the running sbt process.
+  jars = lib.filterAttrs (_: artifact: builtins.elem artifact.url selectedUrls) bootstrapLock.artifacts;
+  missing = lib.subtractLists (map (artifact: artifact.url) (lib.attrValues jars)) selectedUrls;
+  boot = assert lib.assertMsg (selectedUrls != [] && missing == []) "Bootstrap classpath is empty or has unlocked artifacts";
+    pkgs.runCommand "avro4s-sbt-${sbtVersion}-boot" {} (''
     mkdir -p "$out/scala-${scala}/lib" "$out/scala-${scala}/org.scala-sbt/sbt/${sbtVersion}"
   '' + lib.concatStringsSep "\n" (lib.mapAttrsToList (path: artifact:
     let
@@ -19,7 +22,7 @@ let
       destination = if scalaJar == null
         then "scala-${scala}/org.scala-sbt/sbt/${sbtVersion}/${name}"
         else "scala-${scala}/lib/${scalaJar}.jar";
-    in ''ln -sf ${jar} "$out/${destination}"''
+    in ''ln -sf ${jar} "$out/${destination}"'' + "\n"
       + lib.optionalString (lib.hasPrefix "scala-xml_2.12-" name)
         ''
           ln -sf ${jar} "$out/scala-${scala}/lib/${name}"

@@ -151,3 +151,6 @@ artifact for review; it does not commit or publish changes automatically.
 The refresh script also resolves the selected sbt runtime as an explicit
 dependency into `sbt-bootstrap-repo.nix`: sbtix's bundled bootstrap lock targets
 its own sbt version and does not automatically follow this project's upgrade.
+`sbt-bootstrap-jars.json` records only the selected compile JARs; offline
+repository metadata also contains optional/test artifacts that must not be
+loaded into the running build tool.
