@@ -43,6 +43,12 @@ specific/reflect readers with schema class properties may need explicit trusted
 class/package configuration. This library does not disable those protections or
 set a wildcard trust list.
 
+Avro 1.12 also stopped rejecting certain conflicting named definitions during
+schema serialization. The existing erased-generic-name regression failed after
+the upgrade. Derived records now validate name consistency before returning a
+schema, preserving rejection of incompatible same-name definitions. Tests cover
+equal repeated definitions, nested array/map collisions and recursive references.
+
 The Kafka dependency change is confined to `avro4s-kafka`, but is a major client
 upgrade. Applications should validate their broker/client compatibility and any
 explicit Kafka dependency overrides before adopting it. The module's tests
@@ -58,8 +64,10 @@ claim. The next controlled experiments are in [PENDING_WORK.md](PENDING_WORK.md)
 From a fresh checkout, run each JDK separately with a fresh sbt boot directory:
 
 ```sh
-SBT_BOOT="$(mktemp -d)" nix develop .#java21 --command bash scripts/ci-validate.sh
-SBT_BOOT="$(mktemp -d)" nix develop .#java25 --command bash scripts/ci-validate.sh
+SBT_BOOT="$(mktemp -d)" nix develop .#java21 --command bash -c \
+  'bash scripts/ci-validate.sh && bash scripts/dependency-audit.sh'
+SBT_BOOT="$(mktemp -d)" nix develop .#java25 --command bash -c \
+  'bash scripts/ci-validate.sh && bash scripts/dependency-audit.sh'
 nix build
 ```
 

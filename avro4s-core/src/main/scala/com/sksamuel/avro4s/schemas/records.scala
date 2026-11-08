@@ -39,6 +39,7 @@ object Records:
 
     annos.aliases.foreach(record.addAlias)
     annos.props.foreach { case (k, v) => record.addProp(k: String, v: AnyRef) }
+    SchemaHelper.validateNames(record)
 
     new SchemaFor[T] {
       override def schema: Schema = record
