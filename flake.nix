@@ -34,7 +34,10 @@
         };
         newPkgs = javaPkgs "21";
         # Import the sbtix.nix file directly, not the flake's default.nix (which is a stub)
-        sbtixPkg = newPkgs.callPackage "${sbtix}/plugin/nix-exprs/sbtix.nix" {};
+        sbtixPkg = newPkgs.callPackage "${sbtix}/plugin/nix-exprs/sbtix.nix" {
+          # sbtix 1.2.8 uses the old fold alias, removed by current nixpkgs.
+          lib = newPkgs.lib // { fold = newPkgs.lib.foldr; };
+        };
         # Get the sbtix CLI tool from the flake for devShell
         sbtixCli = inputs'.sbtix.packages.sbtix;
         javaShell = version: let tools = javaPkgs version; in tools.mkShell {

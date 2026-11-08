@@ -30,6 +30,9 @@ separate from codec changes when attributing performance results.
 
 ## Maintenance
 
+- Verify signed publishing after merge. The [master run after PR #16](https://github.com/natural-transformation/avro4s/actions/runs/42457082302)
+  stopped at `Import GPG key`. This update upgrades the action and validates
+  packaging; GPG import and a signed publication still need a release check.
 - Retire the custom sbt bootstrap once an upstream sbt release includes the
   patched Log4j, JLine and shaded Coursier dependencies. Prove the replacement
   with the actual-classpath audit before removing the Nix wrapper.

@@ -82,6 +82,13 @@ claim. The next controlled experiments are in [PENDING_WORK.md](PENDING_WORK.md)
 
 ## Validation
 
+The Java 21/25 matrix has verified 465 Scala tests (456 core, 3 Cats, 6 Kafka),
+9 audit-inventory tests, benchmark fixture smoke checks and Java 21 compatibility
+for 373 published-module classes. On 8 November 2026, OSV reported no matching
+advisories across 246 unique resolved Maven coordinates on either JDK, including
+the actual patched sbt bootstrap. The [PR checks](https://github.com/natural-transformation/avro4s/pull/17/checks)
+retain the exact inventories, scan output, classpath provenance and test reports.
+
 From a fresh checkout, run each JDK separately with a fresh sbt boot directory:
 
 ```sh
@@ -154,3 +161,5 @@ its own sbt version and does not automatically follow this project's upgrade.
 `sbt-bootstrap-jars.json` records only the selected compile JARs; offline
 repository metadata also contains optional/test artifacts that must not be
 loaded into the running build tool.
+The sbtix Nix adapter maps its legacy `lib.fold` reference to `lib.foldr`, which
+preserves the old alias's behavior with the current nixpkgs release.
