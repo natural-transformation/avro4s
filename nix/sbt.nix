@@ -43,10 +43,14 @@ in pkgs.symlinkJoin {
     rm -f "$out/share/sbt/boot"
     ln -s ${boot} "$out/share/sbt/boot"
     rm "$out/bin/sbt"
+    # The runner processes SBT_OPTS after CLI options. Remove only conflicting
+    # boot flags there; keep our path as one CLI argument even with spaces.
     makeWrapper ${runner}/bin/sbt "$out/bin/sbt" \
       --run 'boot_root="''${SBT_BOOT:-''${XDG_CACHE_HOME:-$HOME/.cache}/avro4s/sbt-boot}"' \
       --run 'boot_dir="$(${pkgs.python3}/bin/python3 ${../scripts/prepare_sbt_boot.py} ${boot} "$boot_root")"' \
-      --run 'export SBT_OPTS="''${SBT_OPTS:-} -Dsbt.boot.directory=$boot_dir"' \
+      --run 'read -r -a supplied_options <<< "''${SBT_OPTS:-}"' \
+      --run 'managed_options=(); for option in "''${supplied_options[@]}"; do case "$option" in -Dsbt.boot.directory=*|-J-Dsbt.boot.directory=*) ;; *) managed_options+=("$option");; esac; done' \
+      --run 'export SBT_OPTS="''${managed_options[*]}"' \
       --append-flags '-Dsbt.boot.directory="$boot_dir"'
   '';
 }
