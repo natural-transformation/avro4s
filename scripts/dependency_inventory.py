@@ -48,12 +48,12 @@ def jar_modules(path):
     with zipfile.ZipFile(path) as jar:
         properties = [name for name in jar.namelist()
                       if name.startswith("META-INF/maven/") and name.endswith("/pom.properties")]
-        if properties:
-            modules = set()
-            for name in properties:
-                values = dict(line.split("=", 1) for line in jar.read(name).decode().splitlines()
-                              if "=" in line and not line.startswith(("#", "!")))
-                modules.add((values["groupId"] + ":" + values["artifactId"], values["version"]))
+        modules = set()
+        for name in properties:
+            values = dict(line.split("=", 1) for line in jar.read(name).decode().splitlines()
+                          if "=" in line and not line.startswith(("#", "!")))
+            modules.add((values["groupId"] + ":" + values["artifactId"], values["version"]))
+        if modules and "META-INF/MANIFEST.MF" not in jar.namelist():
             return modules
         text = jar.read("META-INF/MANIFEST.MF").decode().replace("\r\n", "\n").replace("\n ", "")
         attrs = dict(line.split(": ", 1) for line in text.splitlines() if ": " in line)
@@ -71,8 +71,10 @@ def jar_modules(path):
     group = BOOT_GROUPS.get(artifact, group)
     if (not re.fullmatch(r"[\w-]+(?:\.[\w-]+)+", group) or not version
             or artifact == path.stem and re.search(r"-\d", artifact)):
+        if modules:
+            return modules
         raise ValueError("Cannot identify bootstrap JAR: " + str(path))
-    return {(group + ":" + artifact, version)}
+    return modules | {(group + ":" + artifact, version)}
 
 
 def collect(root, boot):

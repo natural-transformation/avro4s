@@ -9,22 +9,6 @@
   };
 
   "artifacts" = {
-    "nix-public/com/fasterxml/jackson/core/jackson-annotations/2.13.2/jackson-annotations-2.13.2.pom" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.13.2/jackson-annotations-2.13.2.pom";
-      sha256 = "6DD8038985DD16979BF6E92E6673F49783579374DBB755B2FE4EF03BC115A3DF";
-    };
-    "nix-public/com/fasterxml/jackson/core/jackson-annotations/2.21/jackson-annotations-2.21-sources.jar" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.21/jackson-annotations-2.21-sources.jar";
-      sha256 = "71FE6323D91B16D5D1007FD1E1533FA06BB369ABDE74F68A42A68C0F8F061A8B";
-    };
-    "nix-public/com/fasterxml/jackson/core/jackson-annotations/2.21/jackson-annotations-2.21.jar" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.21/jackson-annotations-2.21.jar";
-      sha256 = "53CA085F4A150F703F49E1AABD935BD03B43E1EA3D55D135438292AF22CEF56B";
-    };
-    "nix-public/com/fasterxml/jackson/core/jackson-annotations/2.21/jackson-annotations-2.21.pom" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.21/jackson-annotations-2.21.pom";
-      sha256 = "71CAC5392151E2A528CC9A09179F0A334179F05C52F8E596CF58DDF12BB27F2B";
-    };
     "nix-public/com/fasterxml/jackson/core/jackson-annotations/2.22/jackson-annotations-2.22-sources.jar" = {
       url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.22/jackson-annotations-2.22-sources.jar";
       sha256 = "F5375C756EE3C585808F9937EB087D074743FD3F05F6AEFF9B183CF19230C9F7";
@@ -37,69 +21,45 @@
       url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.22/jackson-annotations-2.22.pom";
       sha256 = "38C3BA52A0EADE3E3EACC5B13499D56E1038CCBAD8EC4BB79426DC21432B46D0";
     };
-    "nix-public/com/fasterxml/jackson/core/jackson-core/2.21.2/jackson-core-2.21.2-sources.jar" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.21.2/jackson-core-2.21.2-sources.jar";
-      sha256 = "F756A72F5A8A0B53C7C80EE7425DE4D29F46D03C6F9350549B28D182A6EE7CA9";
+    "nix-public/com/fasterxml/jackson/core/jackson-core/2.22.4/jackson-core-2.22.4-sources.jar" = {
+      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.22.4/jackson-core-2.22.4-sources.jar";
+      sha256 = "470B0C061F786DE32A48391A716656E14F73A7439466CA4AD17C1F4607982761";
     };
-    "nix-public/com/fasterxml/jackson/core/jackson-core/2.21.2/jackson-core-2.21.2.jar" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.21.2/jackson-core-2.21.2.jar";
-      sha256 = "12E8655B100267B44D0F14D01B1F5082A5105E616174DC4307BE1A761E92407B";
+    "nix-public/com/fasterxml/jackson/core/jackson-core/2.22.4/jackson-core-2.22.4.jar" = {
+      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.22.4/jackson-core-2.22.4.jar";
+      sha256 = "2D30C375CDDEA9657A1E1EF97547A2694B663B355FACB4DE53A097782B312D1A";
     };
-    "nix-public/com/fasterxml/jackson/core/jackson-core/2.21.2/jackson-core-2.21.2.pom" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.21.2/jackson-core-2.21.2.pom";
-      sha256 = "BAB0E5599649CCB5AB21A9CF9D2E57192DE1E48E6D23524DC253D62FC73C9634";
+    "nix-public/com/fasterxml/jackson/core/jackson-core/2.22.4/jackson-core-2.22.4.pom" = {
+      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.22.4/jackson-core-2.22.4.pom";
+      sha256 = "371B6859B58C3FC1C0823FE66E1E6D6AB251BA99B26F7DCE883BBB7C43906C21";
     };
-    "nix-public/com/fasterxml/jackson/core/jackson-core/2.22.1/jackson-core-2.22.1-sources.jar" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.22.1/jackson-core-2.22.1-sources.jar";
-      sha256 = "F08C6BCEA73EC33DCC18861A9C56E2ECB7C124619F5DE46E1DE89C02E4F65283";
+    "nix-public/com/fasterxml/jackson/core/jackson-databind/2.22.4/jackson-databind-2.22.4-sources.jar" = {
+      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.22.4/jackson-databind-2.22.4-sources.jar";
+      sha256 = "FFBE06FE73B9E3C3CD9B15EC9049711C91808CBBEE133057BF13D3F9B43D7776";
     };
-    "nix-public/com/fasterxml/jackson/core/jackson-core/2.22.1/jackson-core-2.22.1.jar" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.22.1/jackson-core-2.22.1.jar";
-      sha256 = "941FF029BCDB93E83D209CE516C1A7FB8BBAC07D0A2FA122F5BF194B2CD7B4F4";
+    "nix-public/com/fasterxml/jackson/core/jackson-databind/2.22.4/jackson-databind-2.22.4.jar" = {
+      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.22.4/jackson-databind-2.22.4.jar";
+      sha256 = "D4CBF8947087F305869826801913ABDC50735A1FAB2074A1993E7BC67CA974A3";
     };
-    "nix-public/com/fasterxml/jackson/core/jackson-core/2.22.1/jackson-core-2.22.1.pom" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.22.1/jackson-core-2.22.1.pom";
-      sha256 = "34551C6C8D72A4A2215FD05FDCF2F4E693EFF99E6E54632BD57CF2674478E293";
+    "nix-public/com/fasterxml/jackson/core/jackson-databind/2.22.4/jackson-databind-2.22.4.pom" = {
+      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.22.4/jackson-databind-2.22.4.pom";
+      sha256 = "81867C3C99C0E014D133554F2D30CDAD78EC58CF1B56087088204E1E5EB34BAA";
     };
-    "nix-public/com/fasterxml/jackson/core/jackson-databind/2.21.2/jackson-databind-2.21.2-sources.jar" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.21.2/jackson-databind-2.21.2-sources.jar";
-      sha256 = "F2804AE5EC27EFE04F3648F5D7FD6856D8B5B562F7A43C532E4C9EF4242A4D94";
+    "nix-public/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/2.22.4/jackson-dataformat-yaml-2.22.4-sources.jar" = {
+      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/2.22.4/jackson-dataformat-yaml-2.22.4-sources.jar";
+      sha256 = "07073403660C47E49C8E1F0E540288DED8EF78D4952CF1D7D46D48C97726DF65";
     };
-    "nix-public/com/fasterxml/jackson/core/jackson-databind/2.21.2/jackson-databind-2.21.2.jar" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.21.2/jackson-databind-2.21.2.jar";
-      sha256 = "8C982F01F148D805F0AAAC2339011244757E0DF7C6FF8951F2FA3F433B8ED849";
+    "nix-public/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/2.22.4/jackson-dataformat-yaml-2.22.4.jar" = {
+      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/2.22.4/jackson-dataformat-yaml-2.22.4.jar";
+      sha256 = "2F55E2B864F6354B24D4BCCCD488F7C4A3FCE4977F8C8DBAD07242A68E11DDE9";
     };
-    "nix-public/com/fasterxml/jackson/core/jackson-databind/2.21.2/jackson-databind-2.21.2.pom" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.21.2/jackson-databind-2.21.2.pom";
-      sha256 = "CF8E0ECDC35F02DA06E27F4157600BA9D7649C5272E4D6B795EF2A42F070A262";
+    "nix-public/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/2.22.4/jackson-dataformat-yaml-2.22.4.pom" = {
+      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/2.22.4/jackson-dataformat-yaml-2.22.4.pom";
+      sha256 = "CB7695E43F99AE8BB240F1E4301357C7B1E7F55B0A76E99BC959D51AEDED5E41";
     };
-    "nix-public/com/fasterxml/jackson/core/jackson-databind/2.22.1/jackson-databind-2.22.1-sources.jar" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.22.1/jackson-databind-2.22.1-sources.jar";
-      sha256 = "4E7160E0E90A844AE12AC3C73B70EA3855D29425890D3C5AED40723BCA5BCE52";
-    };
-    "nix-public/com/fasterxml/jackson/core/jackson-databind/2.22.1/jackson-databind-2.22.1.jar" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.22.1/jackson-databind-2.22.1.jar";
-      sha256 = "7DCD7E53BEC1F56C7AD278BD1CA0840BEBCC595D61CE44D6A8439ABB75B965B2";
-    };
-    "nix-public/com/fasterxml/jackson/core/jackson-databind/2.22.1/jackson-databind-2.22.1.pom" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.22.1/jackson-databind-2.22.1.pom";
-      sha256 = "0BC8F98C7BD7232BC90324FC63C2F56F7AE92DEE2BF0DC303669F4E2DE8C1F69";
-    };
-    "nix-public/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/2.21.2/jackson-dataformat-yaml-2.21.2-sources.jar" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/2.21.2/jackson-dataformat-yaml-2.21.2-sources.jar";
-      sha256 = "AF4CE80D704AEC3D134D86FD07934B7CEDF842E8F78671887CDD1216A48A1351";
-    };
-    "nix-public/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/2.21.2/jackson-dataformat-yaml-2.21.2.jar" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/2.21.2/jackson-dataformat-yaml-2.21.2.jar";
-      sha256 = "D25551812FA0C14F37CABAA9401E63EADCEA42CE36311183AF5622D5BC8A1BC7";
-    };
-    "nix-public/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/2.21.2/jackson-dataformat-yaml-2.21.2.pom" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/2.21.2/jackson-dataformat-yaml-2.21.2.pom";
-      sha256 = "B14AD4C469AC2625B81B84D30FFDA148A174422508F837C721B8080DFA9F9182";
-    };
-    "nix-public/com/fasterxml/jackson/dataformat/jackson-dataformats-text/2.21.2/jackson-dataformats-text-2.21.2.pom" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformats-text/2.21.2/jackson-dataformats-text-2.21.2.pom";
-      sha256 = "67A9EB4034F282DBF4F47B798812941BE389C6014B09DCF4D8C24CA78D9F3E95";
+    "nix-public/com/fasterxml/jackson/dataformat/jackson-dataformats-text/2.22.4/jackson-dataformats-text-2.22.4.pom" = {
+      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformats-text/2.22.4/jackson-dataformats-text-2.22.4.pom";
+      sha256 = "57CA2B45F3B4015EE42E8BCEA4B886BAA8569EAB4BC34654CBF3410BCBB7A8FE";
     };
     "nix-public/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.13.2/jackson-datatype-jsr310-2.13.2-sources.jar" = {
       url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.13.2/jackson-datatype-jsr310-2.13.2-sources.jar";
@@ -117,33 +77,25 @@
       url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/jackson-base/2.13.2/jackson-base-2.13.2.pom";
       sha256 = "32CFE9EB0C630DB42822E567D9A36463EDAE3A6A4950B95D33B0ED31A68F19A6";
     };
-    "nix-public/com/fasterxml/jackson/jackson-base/2.21.2/jackson-base-2.21.2.pom" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/jackson-base/2.21.2/jackson-base-2.21.2.pom";
-      sha256 = "38C7898C763B8991FFFBD769459972E0176BF0C505C739518C70F7C57D16EED7";
-    };
-    "nix-public/com/fasterxml/jackson/jackson-base/2.22.1/jackson-base-2.22.1.pom" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/jackson-base/2.22.1/jackson-base-2.22.1.pom";
-      sha256 = "3F5F597C7474D90FE27060477F243B804BEC705DC60FECA4DE27CA326386448A";
+    "nix-public/com/fasterxml/jackson/jackson-base/2.22.4/jackson-base-2.22.4.pom" = {
+      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/jackson-base/2.22.4/jackson-base-2.22.4.pom";
+      sha256 = "51B5CC57DF78F50A43210E577075F68399E31DDE7150455E179D249E637582A1";
     };
     "nix-public/com/fasterxml/jackson/jackson-bom/2.13.2/jackson-bom-2.13.2.pom" = {
       url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/jackson-bom/2.13.2/jackson-bom-2.13.2.pom";
       sha256 = "05E57B016BDC58D739B2536E23816800936947D5155C2D03FA8E43DFED63B6BE";
     };
-    "nix-public/com/fasterxml/jackson/jackson-bom/2.21.2/jackson-bom-2.21.2.pom" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/jackson-bom/2.21.2/jackson-bom-2.21.2.pom";
-      sha256 = "BC6C549E632927BB9D8A0ADA20C8467B5007D3B797C7F5DB03A9B60D1DE59BE3";
-    };
     "nix-public/com/fasterxml/jackson/jackson-bom/2.22.1/jackson-bom-2.22.1.pom" = {
       url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/jackson-bom/2.22.1/jackson-bom-2.22.1.pom";
       sha256 = "B366AA5FD26958E2308A4807E5D42B14706B001B3CCBF138E31B8698DC0AC0EC";
     };
+    "nix-public/com/fasterxml/jackson/jackson-bom/2.22.4/jackson-bom-2.22.4.pom" = {
+      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/jackson-bom/2.22.4/jackson-bom-2.22.4.pom";
+      sha256 = "A3C00688A7BF8E128451137B68F90D9137957A372756083D74555A47241D1636";
+    };
     "nix-public/com/fasterxml/jackson/jackson-parent/2.13/jackson-parent-2.13.pom" = {
       url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/jackson-parent/2.13/jackson-parent-2.13.pom";
       sha256 = "2BBA89978172AF1EFFCB4D143D09921A3F3082CA4DCF122B1DED98BF55B2AD57";
-    };
-    "nix-public/com/fasterxml/jackson/jackson-parent/2.21/jackson-parent-2.21.pom" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/jackson-parent/2.21/jackson-parent-2.21.pom";
-      sha256 = "3851DF627FAEB46887B956104630B74A8BBB5F7DE22E974CF15982E20E0373DE";
     };
     "nix-public/com/fasterxml/jackson/jackson-parent/2.22/jackson-parent-2.22.pom" = {
       url = "https://repo1.maven.org/maven2/com/fasterxml/jackson/jackson-parent/2.22/jackson-parent-2.22.pom";
@@ -156,10 +108,6 @@
     "nix-public/com/fasterxml/oss-parent/43/oss-parent-43.pom" = {
       url = "https://repo1.maven.org/maven2/com/fasterxml/oss-parent/43/oss-parent-43.pom";
       sha256 = "E5585CC1C37079B2E3817A8997945736F158831844D59D0E4D3A45B27611F926";
-    };
-    "nix-public/com/fasterxml/oss-parent/75/oss-parent-75.pom" = {
-      url = "https://repo1.maven.org/maven2/com/fasterxml/oss-parent/75/oss-parent-75.pom";
-      sha256 = "FCBBF1C18C9047E6917D384F2064E21B42A58FC85FB0523A9E2E015EFF7C619D";
     };
     "nix-public/com/fasterxml/oss-parent/79/oss-parent-79.pom" = {
       url = "https://repo1.maven.org/maven2/com/fasterxml/oss-parent/79/oss-parent-79.pom";
@@ -485,9 +433,9 @@
       url = "https://repo1.maven.org/maven2/commons-io/commons-io/2.20.0/commons-io-2.20.0.pom";
       sha256 = "BDBDF81072C190EE9A8B181A5C58F5BD917A750FB13A256DEBBF53F5DBD33A2A";
     };
-    "nix-public/io/netty/netty-bom/4.2.12.Final/netty-bom-4.2.12.Final.pom" = {
-      url = "https://repo1.maven.org/maven2/io/netty/netty-bom/4.2.12.Final/netty-bom-4.2.12.Final.pom";
-      sha256 = "4B1EAC8791C931A33D9E2FB8C083432552CF87469DB419B7D2434178E34F070C";
+    "nix-public/io/netty/netty-bom/4.2.19.Final/netty-bom-4.2.19.Final.pom" = {
+      url = "https://repo1.maven.org/maven2/io/netty/netty-bom/4.2.19.Final/netty-bom-4.2.19.Final.pom";
+      sha256 = "78CD415DCFDCD550D781C64C9A03B73EC73DC34CA65FB9E567B6B84E4DFE41A3";
     };
     "nix-public/nl/big-o/liqp/0.9.2.3/liqp-0.9.2.3-sources.jar" = {
       url = "https://repo1.maven.org/maven2/nl/big-o/liqp/0.9.2.3/liqp-0.9.2.3-sources.jar";
@@ -581,85 +529,77 @@
       url = "https://repo1.maven.org/maven2/org/jetbrains/annotations/15.0/annotations-15.0.pom";
       sha256 = "6726678AC07B481B5E35D3AEEFCE526B95FD18EDE33D0D85CB1C688BCDF0E840";
     };
-    "nix-public/org/jline/jline-native/3.29.0/jline-native-3.29.0-sources.jar" = {
-      url = "https://repo1.maven.org/maven2/org/jline/jline-native/3.29.0/jline-native-3.29.0-sources.jar";
-      sha256 = "6CDD8EDF54142ABC558916DF1372A93B115B823DF10FF5C05C11B988A66B2868";
+    "nix-public/org/jline/jline-native/3.30.15/jline-native-3.30.15-sources.jar" = {
+      url = "https://repo1.maven.org/maven2/org/jline/jline-native/3.30.15/jline-native-3.30.15-sources.jar";
+      sha256 = "404EF4B5B9998A71AD3209EB31A2D0A2AEB900BFE0CC1A59D38FAE4839073461";
     };
-    "nix-public/org/jline/jline-native/3.29.0/jline-native-3.29.0.jar" = {
-      url = "https://repo1.maven.org/maven2/org/jline/jline-native/3.29.0/jline-native-3.29.0.jar";
-      sha256 = "19CFCC9D3C78A1C6CFE4C6C9599F16A657E4BF8DA43940FC4B875373236DC258";
+    "nix-public/org/jline/jline-native/3.30.15/jline-native-3.30.15.jar" = {
+      url = "https://repo1.maven.org/maven2/org/jline/jline-native/3.30.15/jline-native-3.30.15.jar";
+      sha256 = "076F95383993E5241D63704AEF06A7D6A1E5233E762CF2B1130B663CFD9F39E4";
     };
-    "nix-public/org/jline/jline-native/3.29.0/jline-native-3.29.0.pom" = {
-      url = "https://repo1.maven.org/maven2/org/jline/jline-native/3.29.0/jline-native-3.29.0.pom";
-      sha256 = "5825548C79A919B6B1D8B7C0904BE72A1DE43E84AB5525923C2F91279F38DC83";
+    "nix-public/org/jline/jline-native/3.30.15/jline-native-3.30.15.pom" = {
+      url = "https://repo1.maven.org/maven2/org/jline/jline-native/3.30.15/jline-native-3.30.15.pom";
+      sha256 = "B20F8C99BFB8FC1BA74249176A8B7722EB62382A59AC1888214807809F7FD72B";
     };
-    "nix-public/org/jline/jline-parent/3.29.0/jline-parent-3.29.0.pom" = {
-      url = "https://repo1.maven.org/maven2/org/jline/jline-parent/3.29.0/jline-parent-3.29.0.pom";
-      sha256 = "7922EFD3D870A7D7AE03B196C300E35C5DE0228E59A5B012AEA641E36D79928E";
+    "nix-public/org/jline/jline-reader/3.30.15/jline-reader-3.30.15-sources.jar" = {
+      url = "https://repo1.maven.org/maven2/org/jline/jline-reader/3.30.15/jline-reader-3.30.15-sources.jar";
+      sha256 = "D21E6B71219254DEBF9D13A02ADB3BD09A98C719DAA43B708969902057CD1DA3";
     };
-    "nix-public/org/jline/jline-reader/3.29.0/jline-reader-3.29.0-sources.jar" = {
-      url = "https://repo1.maven.org/maven2/org/jline/jline-reader/3.29.0/jline-reader-3.29.0-sources.jar";
-      sha256 = "F22E92B22A17F16EC8427FDC42ED9C0CAAEFAADDAA35ED9BCC7A396D3E751B1D";
+    "nix-public/org/jline/jline-reader/3.30.15/jline-reader-3.30.15.jar" = {
+      url = "https://repo1.maven.org/maven2/org/jline/jline-reader/3.30.15/jline-reader-3.30.15.jar";
+      sha256 = "F72F2CE167765B18A7604370963C1413B5BEC923A97576B745FBCE40A7034FBF";
     };
-    "nix-public/org/jline/jline-reader/3.29.0/jline-reader-3.29.0.jar" = {
-      url = "https://repo1.maven.org/maven2/org/jline/jline-reader/3.29.0/jline-reader-3.29.0.jar";
-      sha256 = "A4CB0A5FDE9289F2F1B614E04F94B202F6FF5C9C96476425837B1184C92EF81D";
+    "nix-public/org/jline/jline-reader/3.30.15/jline-reader-3.30.15.pom" = {
+      url = "https://repo1.maven.org/maven2/org/jline/jline-reader/3.30.15/jline-reader-3.30.15.pom";
+      sha256 = "10AFDBA632F9BB0ACAD801B0088E8B7C25760B14244DEC85B1297E83376CF3DB";
     };
-    "nix-public/org/jline/jline-reader/3.29.0/jline-reader-3.29.0.pom" = {
-      url = "https://repo1.maven.org/maven2/org/jline/jline-reader/3.29.0/jline-reader-3.29.0.pom";
-      sha256 = "D722F49A91292CFC69DA0E33A61B788DD4253E8174161639F640B21D461CC429";
+    "nix-public/org/jline/jline-terminal-jni/3.30.15/jline-terminal-jni-3.30.15-sources.jar" = {
+      url = "https://repo1.maven.org/maven2/org/jline/jline-terminal-jni/3.30.15/jline-terminal-jni-3.30.15-sources.jar";
+      sha256 = "3075BE78446CA06FEECFC48AEC90FC07B7A0C9D5746F7D5098CD2EF732DBE685";
     };
-    "nix-public/org/jline/jline-terminal-jni/3.29.0/jline-terminal-jni-3.29.0-sources.jar" = {
-      url = "https://repo1.maven.org/maven2/org/jline/jline-terminal-jni/3.29.0/jline-terminal-jni-3.29.0-sources.jar";
-      sha256 = "C0C0C46D1722873467FD6A0E45A664DFEF27156F4E62A300DBB4545F618B87B9";
+    "nix-public/org/jline/jline-terminal-jni/3.30.15/jline-terminal-jni-3.30.15.jar" = {
+      url = "https://repo1.maven.org/maven2/org/jline/jline-terminal-jni/3.30.15/jline-terminal-jni-3.30.15.jar";
+      sha256 = "78FB22E6DDA00624995E02F343BE59A879BF8A63EDABB4ECCD81476335914EC9";
     };
-    "nix-public/org/jline/jline-terminal-jni/3.29.0/jline-terminal-jni-3.29.0.jar" = {
-      url = "https://repo1.maven.org/maven2/org/jline/jline-terminal-jni/3.29.0/jline-terminal-jni-3.29.0.jar";
-      sha256 = "13FEF8BCC0E4788C8E192DC76C33758683C6BFDBAEF6F67B41445EB8986773AD";
+    "nix-public/org/jline/jline-terminal-jni/3.30.15/jline-terminal-jni-3.30.15.pom" = {
+      url = "https://repo1.maven.org/maven2/org/jline/jline-terminal-jni/3.30.15/jline-terminal-jni-3.30.15.pom";
+      sha256 = "5266DD258C7F35A572D783B2858F540193E89AFB76D99C2C48C72546589DFF81";
     };
-    "nix-public/org/jline/jline-terminal-jni/3.29.0/jline-terminal-jni-3.29.0.pom" = {
-      url = "https://repo1.maven.org/maven2/org/jline/jline-terminal-jni/3.29.0/jline-terminal-jni-3.29.0.pom";
-      sha256 = "4DBEC22363D2FA1C4E2C89212F2626BC37F8D52D4DC43E8D87DF77AC64FFAFA4";
+    "nix-public/org/jline/jline-terminal/3.30.15/jline-terminal-3.30.15-sources.jar" = {
+      url = "https://repo1.maven.org/maven2/org/jline/jline-terminal/3.30.15/jline-terminal-3.30.15-sources.jar";
+      sha256 = "72604C4ADC3F85BD06A942717A1842034E42C86C20FC5D8027D9987BEEAAE5F5";
     };
-    "nix-public/org/jline/jline-terminal/3.29.0/jline-terminal-3.29.0-sources.jar" = {
-      url = "https://repo1.maven.org/maven2/org/jline/jline-terminal/3.29.0/jline-terminal-3.29.0-sources.jar";
-      sha256 = "44899935C84500C3373DB4F8870C7A40D2DC69515264F8362531FC8C060CEA50";
+    "nix-public/org/jline/jline-terminal/3.30.15/jline-terminal-3.30.15.jar" = {
+      url = "https://repo1.maven.org/maven2/org/jline/jline-terminal/3.30.15/jline-terminal-3.30.15.jar";
+      sha256 = "EED027D1F63A870C8D0522C067959382AD7D3CCDDFD8C7041488432189E0E284";
     };
-    "nix-public/org/jline/jline-terminal/3.29.0/jline-terminal-3.29.0.jar" = {
-      url = "https://repo1.maven.org/maven2/org/jline/jline-terminal/3.29.0/jline-terminal-3.29.0.jar";
-      sha256 = "FD68A98B32B1132035C62102E5DF0B0FDC358E7C87A9F876CE7071450B4D10DA";
+    "nix-public/org/jline/jline-terminal/3.30.15/jline-terminal-3.30.15.pom" = {
+      url = "https://repo1.maven.org/maven2/org/jline/jline-terminal/3.30.15/jline-terminal-3.30.15.pom";
+      sha256 = "1E5E29C574A9BE38E697AADAF5EB9A6C2EBA771D747BD0C92B826C85955C74CC";
     };
-    "nix-public/org/jline/jline-terminal/3.29.0/jline-terminal-3.29.0.pom" = {
-      url = "https://repo1.maven.org/maven2/org/jline/jline-terminal/3.29.0/jline-terminal-3.29.0.pom";
-      sha256 = "7BFA6055D005E2C8FE4A6EFC692AE6EFD7F543E3940FB55ECCA09D58C78CB0FE";
+    "nix-public/org/jsoup/jsoup/1.24.1/jsoup-1.24.1-sources.jar" = {
+      url = "https://repo1.maven.org/maven2/org/jsoup/jsoup/1.24.1/jsoup-1.24.1-sources.jar";
+      sha256 = "C3FB396A945371E62DD3749E18E8CF235532353D5C98FF67681914A36A61E92E";
     };
-    "nix-public/org/jsoup/jsoup/1.22.2/jsoup-1.22.2-sources.jar" = {
-      url = "https://repo1.maven.org/maven2/org/jsoup/jsoup/1.22.2/jsoup-1.22.2-sources.jar";
-      sha256 = "3AED3E38EC1E0373EB6755213B01D197802F858850BCE20E63D99C93E08818BC";
+    "nix-public/org/jsoup/jsoup/1.24.1/jsoup-1.24.1.jar" = {
+      url = "https://repo1.maven.org/maven2/org/jsoup/jsoup/1.24.1/jsoup-1.24.1.jar";
+      sha256 = "FABBB4AAF7FB5340AED0613826ECD110427999D765D8E0367CEDDE2950D7097C";
     };
-    "nix-public/org/jsoup/jsoup/1.22.2/jsoup-1.22.2.jar" = {
-      url = "https://repo1.maven.org/maven2/org/jsoup/jsoup/1.22.2/jsoup-1.22.2.jar";
-      sha256 = "596785996D3C6DF16F544C232D10A9A1D88783B2A4740CF5251CB616F2BE704D";
+    "nix-public/org/jsoup/jsoup/1.24.1/jsoup-1.24.1.pom" = {
+      url = "https://repo1.maven.org/maven2/org/jsoup/jsoup/1.24.1/jsoup-1.24.1.pom";
+      sha256 = "387F01E1AAE255A30FECAE1B8377EC58A9E3BDC60008BFE934137101A4C95225";
     };
-    "nix-public/org/jsoup/jsoup/1.22.2/jsoup-1.22.2.pom" = {
-      url = "https://repo1.maven.org/maven2/org/jsoup/jsoup/1.22.2/jsoup-1.22.2.pom";
-      sha256 = "54FAB990A0EF56297088C252213FA83394FAFCEFA516059044C09E3A8E05E552";
+    "nix-public/org/jspecify/jspecify/1.0.1/jspecify-1.0.1.jar" = {
+      url = "https://repo1.maven.org/maven2/org/jspecify/jspecify/1.0.1/jspecify-1.0.1.jar";
+      sha256 = "070D75F261FE4C5B8202508366715F7F2D4660F88C8EF7E6D3575E48C9683B66";
     };
-    "nix-public/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.jar" = {
-      url = "https://repo1.maven.org/maven2/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.jar";
-      sha256 = "1FAD6E6BE7557781E4D33729D49AE1CDC8FDDA6FE477BB0CC68CE351EAFDFBAB";
-    };
-    "nix-public/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.pom" = {
-      url = "https://repo1.maven.org/maven2/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.pom";
-      sha256 = "CDAB929A3B95211F43D2090C5E2D0DFE8465960E378BC32B35841DAB324433A6";
+    "nix-public/org/jspecify/jspecify/1.0.1/jspecify-1.0.1.pom" = {
+      url = "https://repo1.maven.org/maven2/org/jspecify/jspecify/1.0.1/jspecify-1.0.1.pom";
+      sha256 = "55B38BF1A7B1D8EA518CF2F4F3AE9AAA236E61BBF0B6BD31FFB49753A059DD5E";
     };
     "nix-public/org/junit/junit-bom/5.13.1/junit-bom-5.13.1.pom" = {
       url = "https://repo1.maven.org/maven2/org/junit/junit-bom/5.13.1/junit-bom-5.13.1.pom";
       sha256 = "FA68451EA830572ED43FFE51D75B6A05F7A5E665A602A51F49D6BE02063A65F3";
-    };
-    "nix-public/org/junit/junit-bom/5.14.1/junit-bom-5.14.1.pom" = {
-      url = "https://repo1.maven.org/maven2/org/junit/junit-bom/5.14.1/junit-bom-5.14.1.pom";
-      sha256 = "01B01DFA366550B40AC5760548A7D728B6109D17C451E83864D1E5E0CE862C94";
     };
     "nix-public/org/junit/junit-bom/5.14.3/junit-bom-5.14.3.pom" = {
       url = "https://repo1.maven.org/maven2/org/junit/junit-bom/5.14.3/junit-bom-5.14.3.pom";

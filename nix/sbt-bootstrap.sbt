@@ -3,6 +3,8 @@
 scalaVersion := "2.12.21"
 libraryDependencies += "org.scala-sbt" % "sbt" % sbtVersion.value
 dependencyOverrides ++= Seq(
+  // 2.1.14 embeds jsoup 1.23.2; overriding external jsoup cannot fix a shaded copy.
+  "io.get-coursier" % "lm-coursier-shaded_2.12" % "2.1.14",
   "org.apache.logging.log4j" % "log4j-api" % "2.26.1",
   "org.apache.logging.log4j" % "log4j-core" % "2.26.1",
   "org.jsoup" % "jsoup" % "1.24.1"

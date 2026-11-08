@@ -49,6 +49,17 @@ class DependencyInventoryTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 jar_modules(path)
 
+    def test_shaded_metadata_does_not_hide_the_outer_library(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "outer_2.12-1.2.3.jar"
+            with zipfile.ZipFile(path, "w") as jar:
+                jar.writestr("META-INF/MANIFEST.MF",
+                             "Implementation-Vendor-Id: example.org\nImplementation-Version: 1.2.3\n")
+                jar.writestr("META-INF/maven/example.org/embedded/pom.properties",
+                             "groupId=example.org\nartifactId=embedded\nversion=4.5.6\n")
+            self.assertEqual(jar_modules(path),
+                             {("example.org:outer_2.12", "1.2.3"), ("example.org:embedded", "4.5.6")})
+
     def test_versionless_scala_bootstrap_jar(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "scala-library.jar"
