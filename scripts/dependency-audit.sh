@@ -13,6 +13,7 @@ java -version 2> target/dependency-audit/java-version.txt
 python3 scripts/dependency_inventory.py --boot "$SBT_BOOT" \
   --classpath target/dependency-audit/bootstrap-classpath.txt \
   --expected "$AVRO4S_SBT_BOOT_SOURCE" --launcher "$AVRO4S_SBT_LAUNCH_JAR" \
+  --launcher-path target/dependency-audit/launcher-path.txt \
   --output target/dependency-audit/osv-scanner.json
 osv-scanner scan source \
   --lockfile=osv-scanner:target/dependency-audit/osv-scanner.json \

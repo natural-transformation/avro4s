@@ -27,7 +27,7 @@ require explicit security updates even with the direct versions above:
 | Transitive dependency | Audited candidate before remediation | Selected fix |
 | --- | --- | --- |
 | Jackson core / databind | 2.21.2, 2.22.1 | 2.22.4 |
-| Logback core / classic | 1.3.14 | 1.5.34 |
+| Logback core | 1.3.14 | 1.5.34 |
 | Guava | 16.0.1 | 33.8.0-jre |
 | OkHttp / Okio | 3.14.0 / 1.17.2 | 4.12.0 / 3.6.0 |
 | Apache HttpClient | 4.3.5 | 4.5.14 |
@@ -35,7 +35,7 @@ require explicit security updates even with the direct versions above:
 | MessagePack | 0.9.8 | 0.9.12 |
 | JLine | 3.27.1, 3.29.0 | 3.30.15 |
 | jsoup | 1.18.1, 1.22.2 | 1.23.2 embedded; 1.24.1 external |
-| Log4j API / core in sbt | 2.25.4 | 2.26.1 |
+| Log4j API / core / SLF4J bridge in sbt | 2.25.4 | 2.26.1 |
 | sbt Coursier integration | 2.1.13 | 2.1.14 (embeds patched jsoup) |
 
 Jackson requirements are also direct published dependencies, so the generated
@@ -43,7 +43,7 @@ POM carries the patched versions to consumers. Compiler/documentation-tool and
 publishing-plugin overrides stay in their respective build configurations.
 
 The old external sbt-dependency-graph plugin is removed: sbt already supplies
-dependency graph commands. Scala stays on the existing 3.3 LTS line, and json4s
+`dependencyTree`; additional graph commands require `addDependencyTreePlugin`. Scala stays on the existing 3.3 LTS line, and json4s
 stays on its stable 4.0 line rather than selecting a milestone release.
 The sbt-sonatype 3.12.2 upgrade conflicts with sbtix 1.2.8's uPickle major
 version during lock generation. Keep the existing publisher and scan its full
@@ -64,11 +64,27 @@ specific/reflect readers with schema class properties may need explicit trusted
 class/package configuration. This library does not disable those protections or
 set a wildcard trust list.
 
-Avro 1.12 also stopped rejecting certain conflicting named definitions during
-schema serialization. The existing erased-generic-name regression failed after
-the upgrade. Derived records now validate name consistency before returning a
-schema, preserving rejection of incompatible same-name definitions. Tests cover
-equal repeated definitions, nested array/map collisions and recursive references.
+Avro 1.12 stopped rejecting some conflicting named definitions when serializing
+schema JSON. `AvroSchema[T]` now validates the complete graph once, including
+union, tuple, collection and custom-schema roots. Data-container output validates
+before writing its header, including the explicit-schema constructor. Conflicting
+definitions are rejected; equal definitions and recursive references are accepted.
+Equivalence deliberately follows Avro's `Schema.equals`, as Avro 1.11 did, so
+metadata such as documentation and aliases is not compared independently.
+
+This is an explicit tightening of **schema export**, not a renaming policy.
+`AvroSchema[T]` can now reject a graph that used to fail only at `toString`.
+Use it when handing a schema to a registry or another process. Raw
+`SchemaFor[T].schema`, binary/JSON streams and binary/JSON `GenericSerde` retain
+the in-memory schema behavior: heterogeneous tuples and same-named fixed fields
+can still round trip without serializing their schema. They must use the same
+in-memory writer/reader graph; serializing that conflicting graph as schema JSON
+is unsafe. Tuple and fixed type names are unchanged. No nested record is validated
+during composition, avoiding repeated subtree checks.
+
+Regression tests cover conflicting sealed-trait/tuple/collection roots, equal
+named definitions, recursive references, binary tuple/fixed round trips, binary
+Kafka serde and rejection before a data-container header is written.
 
 The Kafka dependency change is confined to `avro4s-kafka`, but is a major client
 upgrade. Applications should validate their broker/client compatibility and any
@@ -82,12 +98,20 @@ claim. The next controlled experiments are in [PENDING_WORK.md](PENDING_WORK.md)
 
 ## Validation
 
-The Java 21/25 matrix has verified 465 Scala tests (456 core, 3 Cats, 6 Kafka),
-9 audit-inventory tests, benchmark fixture smoke checks and Java 21 compatibility
-for 373 published-module classes. On 8 November 2026, OSV reported no matching
-advisories across 246 unique resolved Maven coordinates on either JDK, including
-the actual patched sbt bootstrap. The [PR checks](https://github.com/natural-transformation/avro4s/pull/17/checks)
-retain the exact inventories, scan output, classpath provenance and test reports.
+The Java 21/25 matrix runs the Scala tests, audit-inventory/bootstrap tests,
+JMH smoke cases and Java 21 classfile checks. The [PR checks](https://github.com/natural-transformation/avro4s/pull/17/checks)
+retain the exact inventories, scan output, classpath provenance and JUnit reports.
+A separate comparison workflow measures schema derivation against the test-only
+baseline `0df287d8` on each JDK; timings on shared runners are evidence for this
+fixture, not a pass/fail performance threshold or a Java 21-versus-25 comparison.
+
+Java 21 additionally builds offline and exercises `publishSigned` against an
+isolated local Maven repository with an ephemeral GPG key. All library JARs,
+sources, documentation and POMs must exist and their signatures must verify.
+This does not exercise Central's authenticated remote upload or production keys.
+Release jobs resolve the requested branch once and pass the same commit SHA to
+both validation and publication. A known advisory, including in build/test tools,
+blocks release; there is no automatic exception or severity threshold.
 
 From a fresh checkout, run each JDK separately with a fresh sbt boot directory:
 
@@ -110,7 +134,7 @@ depends on both Java jobs succeeding.
 `scripts/dependency_inventory.py` exports selected, non-evicted dependencies from
 sbt's resolved reports for core, Cats, Kafka, benchmarks and the build plugins.
 This includes runtime, test and transitive dependencies. It additionally inspects
-the actual sbt bootstrap JARs, including embedded Maven metadata, so the sbt
+the actual sbt bootstrap JARs and launcher, including embedded Maven metadata, so the sbt
 runtime is not represented only by its top-level version number. Missing reports,
 unresolved artifacts or unidentifiable bootstrap JARs fail the check.
 
@@ -129,18 +153,26 @@ The Java 21 package in that nixpkgs snapshot predates the October security
 release. `nix/jdk21.nix` uses its existing Temurin packaging with the official
 [21.0.13+9 release](https://github.com/adoptium/temurin21-binaries/releases/tag/jdk-21.0.13%2B9)
 assets and SHA-256 hashes for all three supported platforms. Java 25 uses the
-pinned nixpkgs OpenJDK build. The actual versions are recorded in CI artifacts.
+pinned nixpkgs JDK (OpenJDK on Linux, Zulu on aarch64-darwin). The actual versions are recorded in CI artifacts.
 
 `nix/sbt.nix` constructs sbt's real startup classpath from the resolved bootstrap
-lock, then copies it into a writable, content-addressed cache before launching
-sbt. Ordinary project `dependencyOverrides` cannot change that startup classpath.
+lock in `nix/sbt-bootstrap.json`. It checks the locked sbt version against
+`project/build.properties`. A process lock and atomic directory rename initialize
+a writable cache once; subsequent launches do not overwrite live JARs. Interrupted
+initialization is recoverable. Old cache generations are retained because another
+JVM may still be using them; remove unused generations only after stopping sbt and
+IDE sessions. The wrapper overrides conflicting `SBT_OPTS` boot-directory settings;
+CI deliberately supplies one and verifies the resulting classpath. Ordinary project `dependencyOverrides` cannot change that startup classpath.
 The bootstrap also updates Coursier itself: its shaded jsoup copy cannot be fixed
 by adding a newer, separate jsoup JAR. The audit inventories both outer artifacts
 and embedded Maven metadata. Use the Nix shell to obtain these build-tool fixes;
 an independently installed sbt launcher is outside this managed environment.
 The audit exports the launcher's actual classpath and fails if any of those JARs
-is outside the scanned bootstrap directory; merely seeding a clean, unused cache
-cannot satisfy the check.
+is outside the scanned bootstrap directory or differs in content from the
+pinned Nix bootstrap. It also checks the actual launcher path. Merely seeding a
+clean, unused cache cannot satisfy the check. Outer JAR identification must succeed
+even when embedded metadata is present. Metadata-based scanning cannot enumerate
+bundled libraries whose upstream JAR strips all identifying metadata.
 
 ## Refreshing locks
 
@@ -155,11 +187,17 @@ nix build
 Review and commit every changed lock imported by `default.nix`, including the
 nested build-plugin locks. The dependency-lock refresh workflow produces a patch
 artifact for review; it does not commit or publish changes automatically.
-The refresh script also resolves the selected sbt runtime as an explicit
-dependency into `sbt-bootstrap-repo.nix`: sbtix's bundled bootstrap lock targets
-its own sbt version and does not automatically follow this project's upgrade.
-`sbt-bootstrap-jars.json` records only the selected compile JARs; offline
-repository metadata also contains optional/test artifacts that must not be
-loaded into the running build tool.
+The refresh script resolves sbt itself in a temporary project and writes only
+the selected compile JARs and their hashes into `nix/sbt-bootstrap.json`. It reads
+sbtix's output using Nix evaluation, without rewriting generated Nix text. Missing
+Scala bootstrap JARs are pinned explicitly. The large temporary bootstrap metadata
+lock (including sources, tests and optional artifacts) is not imported by the
+offline library build; that build uses the same pinned boot tree.
+The shell's sbtix CLI uses the patched repository sbt/JDK, while reusing sbtix's
+prebuilt plugin. The bootstrap audit covers the running sbt distribution, not the
+historical toolchain used to build the sbtix plugin derivation.
+When changing sbt itself, enter the existing working Nix shell before editing
+`project/build.properties`, then refresh the lock from that shell before evaluating
+the updated flake. The new shell rejects mismatched sbt/lock versions.
 The sbtix Nix adapter maps its legacy `lib.fold` reference to `lib.foldr`, which
 preserves the old alias's behavior with the current nixpkgs release.

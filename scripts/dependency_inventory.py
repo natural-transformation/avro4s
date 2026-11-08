@@ -155,8 +155,11 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--expected", type=Path, required=True)
     parser.add_argument("--launcher", type=Path, required=True)
+    parser.add_argument("--launcher-path", type=Path, required=True)
     args = parser.parse_args()
     check_bootstrap_classpath(args.boot, args.classpath, args.expected)
+    if Path(args.launcher_path.read_text().strip()).resolve() != args.launcher.resolve():
+        raise ValueError("sbt used a launcher outside the managed Nix distribution")
     inventory = collect(args.root, args.boot, args.launcher)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(inventory, indent=2) + "\n")
