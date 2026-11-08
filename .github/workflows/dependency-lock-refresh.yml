@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [maintenance/dependencies-java21-java25]
-    paths: ['flake.nix', 'flake.lock', 'project/**', 'build.sbt', 'default.nix']
+    paths: ['flake.nix', 'flake.lock', 'project/**', 'build.sbt', 'default.nix', 'scripts/refresh-dependency-locks.sh']
 
 permissions:
   contents: read
@@ -19,11 +19,12 @@ jobs:
       - name: Refresh Nix packages
         run: nix flake update nixpkgs
       - name: Refresh resolved Maven locks through sbtix
-        run: nix develop .#java21 --command sbtix-gen
+        run: nix develop .#java21 --command bash scripts/refresh-dependency-locks.sh
       - name: Package lock changes for review
         if: always()
         run: |
           mkdir -p target/lock-refresh
+          git add --intent-to-add sbt-bootstrap-repo.nix
           git diff --binary > target/lock-refresh/locks.patch
           git status --short > target/lock-refresh/status.txt
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

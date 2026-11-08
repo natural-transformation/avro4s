@@ -103,10 +103,13 @@ After changing dependencies, use the repository's flake-native sbtix flow:
 
 ```sh
 nix flake update nixpkgs
-nix develop .#java21 --command sbtix-gen
+nix develop .#java21 --command bash scripts/refresh-dependency-locks.sh
 nix build
 ```
 
 Review and commit every changed lock imported by `default.nix`, including the
 nested build-plugin locks. The dependency-lock refresh workflow produces a patch
 artifact for review; it does not commit or publish changes automatically.
+The refresh script also resolves the selected sbt runtime as an explicit
+dependency into `sbt-bootstrap-repo.nix`: sbtix's bundled bootstrap lock targets
+its own sbt version and does not automatically follow this project's upgrade.
