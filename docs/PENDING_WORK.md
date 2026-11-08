@@ -30,9 +30,10 @@ separate from codec changes when attributing performance results.
 
 ## Maintenance
 
-- Verify signed publishing after merge. The [master run after PR #16](https://github.com/natural-transformation/avro4s/actions/runs/42457082302)
+- Verify production signing credentials and Central upload after merge. The [master run after PR #16](https://github.com/natural-transformation/avro4s/actions/runs/42457082302)
   stopped at `Import GPG key`. This update upgrades the action and validates
-  packaging; GPG import and a signed publication still need a release check.
+  local signed publication with a disposable key; production GPG import and
+  Central's authenticated upload/release remain a separate release check.
 - Retire the custom sbt bootstrap once an upstream sbt release includes the
   patched Log4j, JLine and shaded Coursier dependencies. Prove the replacement
   with the actual-classpath audit before removing the Nix wrapper.
@@ -47,6 +48,9 @@ separate from codec changes when attributing performance results.
 - Revisit the commented-out general schema-evolution suite as a separate behavior
   project. The live alternating-schema regression tests do not implement general
   Avro schema resolution.
+- Fix the pre-existing Tuple6 schema bug (`_6` currently uses the fifth element's
+  schema). Add a heterogeneous six-element round-trip regression first. Keep this
+  independent of the dependency update's name-validation contract.
 - Rerun the complete resolved dependency vulnerability scan regularly and when
   dependencies change. A clean scan means no known matching advisories in that
   database at scan time, not immunity from future discoveries.

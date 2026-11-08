@@ -1,0 +1,54 @@
+name: Schema derivation comparison
+
+on:
+  workflow_dispatch:
+    inputs:
+      baseline:
+        description: Commit containing the benchmark before the schema fix
+        default: '0df287d82ed1fd2c893c86ff503a0a626fae6275'
+        required: true
+  push:
+    branches: [maintenance/dependencies-java21-java25]
+    paths: [.github/workflows/schema-benchmark-comparison.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        java: ['21', '25']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: candidate
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.baseline || '0df287d82ed1fd2c893c86ff503a0a626fae6275' }}
+          path: baseline
+      - uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31.11.3
+      - uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
+        with:
+          name: avro4s
+          push: false
+      - name: Measure both revisions on the same runner
+        env:
+          JDK: ${{ matrix.java }}
+        run: |
+          for revision in baseline candidate; do
+            (
+              cd "$revision"
+              export SBT_BOOT="$RUNNER_TEMP/benchmark-$revision-$JDK"
+              nix develop ".#java$JDK" --command sbt -batch -Dsbt.server.autostart=false \
+                'benchmarks/Jmh/run -wi 3 -i 5 -w 1s -r 1s -f 2 -prof gc -rf json -rff target/schema-benchmark.json benchmarks.performance.SchemaDerivationBenchmarks.*'
+            )
+          done
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: schema-derivation-java-${{ matrix.java }}
+          path: '**/target/schema-benchmark.json'
