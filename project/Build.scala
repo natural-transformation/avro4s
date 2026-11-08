@@ -8,12 +8,13 @@ object Build extends AutoPlugin {
 
   object autoImport {
     val org = "com.natural-transformation"
-    val AvroVersion = "1.11.5"
-    val ScalatestVersion = "3.2.17"
-    val Slf4jVersion = "2.0.18"
-    val Json4sVersion = "4.0.6"
-    val CatsVersion = "2.10.0"
-    val MagnoliaVersion = "1.3.20"
+    val AvroVersion = "1.12.2"
+    val ScalatestVersion = "3.2.20"
+    val Slf4jVersion = "2.0.20"
+    val Json4sVersion = "4.0.7"
+    val CatsVersion = "2.13.0"
+    val MagnoliaVersion = "1.3.24"
+    val KafkaVersion = "4.3.2"
   }
 
   import autoImport._
@@ -61,13 +62,15 @@ object Build extends AutoPlugin {
   
   val commonSettings = Seq(
     organization       := org,
-    scalaVersion := "3.3.7",
+    scalaVersion := "3.3.9",
     // For reproducible builds, we avoid `mavenLocal` unless explicitly enabled.
     // Set AVRO4S_USE_MAVEN_LOCAL=1 to opt in.
     resolvers ++= (if (useMavenLocalResolver) Seq(Resolver.mavenLocal) else Nil),
     Test / parallelExecution := false,
     Test / scalacOptions ++= Seq("-Xmax-inlines:100", "-Yretain-trees"),
-    javacOptions := Seq("-source", "21", "-target", "21"),    
+    // Keep both bytecode and JDK API usage compatible with Java 21 when built on 25.
+    scalacOptions += "-release:21",
+    javacOptions := Seq("--release", "21"),
     libraryDependencies ++= Seq(
       "org.apache.avro"   % "avro"              % AvroVersion,
       // Provide a no-op SLF4J provider in tests to avoid "No SLF4J providers were found" warnings.

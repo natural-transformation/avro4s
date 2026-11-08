@@ -17,20 +17,24 @@
       systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
       perSystem = { config, self', inputs', pkgs, system, ... }: 
       let
-        jdk21-overlay = self: super: {
-          jdk = super.jdk21;
-          jre = super.jdk21;
-          sbt = super.sbt.override { jre = super.jdk21; };
-        };
-        newPkgs = import nixpkgs {
+        javaPkgs = version: import nixpkgs {
           inherit system;
-          overlays = [ jdk21-overlay ];
+          overlays = [ (self: super: let jdk = super."jdk${version}"; in {
+            inherit jdk;
+            jre = jdk;
+            sbt = super.sbt.override { jre = jdk; };
+          }) ];
         };
-        libPath = nixpkgs.lib.makeLibraryPath [ newPkgs.lmdb ];
+        newPkgs = javaPkgs "21";
         # Import the sbtix.nix file directly, not the flake's default.nix (which is a stub)
         sbtixPkg = newPkgs.callPackage "${sbtix}/plugin/nix-exprs/sbtix.nix" {};
         # Get the sbtix CLI tool from the flake for devShell
         sbtixCli = inputs'.sbtix.packages.sbtix;
+        javaShell = version: let tools = javaPkgs version; in tools.mkShell {
+          nativeBuildInputs = [ tools.sbt sbtixCli tools.jdk tools.python3 tools.osv-scanner ];
+          JAVA_HOME = "${tools.jdk}";
+          NIX_PATH = "nixpkgs=${inputs.nixpkgs}";
+        };
       in {
         # Make packages.default lazy - wrap in a function that's only called when needed
         # This prevents it from being evaluated when only devShells is needed
@@ -40,15 +44,10 @@
           sbtix = sbtixPkg;
         });
 
-        devShells.default = newPkgs.mkShell {
-          nativeBuildInputs = with newPkgs; [
-            sbt
-            sbtixCli
-            jdk
-          ];
-          # environment variables go here:
-          # Set NIX_PATH to make sure the nix-build in `build.sh` produce the same results as `nix build`
-          NIX_PATH = "nixpkgs=${inputs.nixpkgs}"; 
+        devShells = {
+          default = javaShell "21";
+          java21 = javaShell "21";
+          java25 = javaShell "25";
         };
       };
      

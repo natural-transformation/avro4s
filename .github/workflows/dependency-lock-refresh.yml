@@ -1,0 +1,32 @@
+name: Refresh dependency locks
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [maintenance/dependencies-java21-java25]
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: cachix/install-nix-action@v31.11.3
+      - name: Refresh Nix packages
+        run: nix flake update nixpkgs
+      - name: Refresh resolved Maven locks through sbtix
+        run: nix develop .#java21 --command sbtix-gen-all2
+      - name: Package lock changes for review
+        if: always()
+        run: |
+          mkdir -p target/lock-refresh
+          git diff --binary > target/lock-refresh/locks.patch
+          git status --short > target/lock-refresh/status.txt
+      - uses: actions/upload-artifact@v7.0.2
+        if: always()
+        with:
+          name: dependency-lock-refresh
+          path: target/lock-refresh/

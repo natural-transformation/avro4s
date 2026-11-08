@@ -1,9 +1,9 @@
 resolvers += Classpaths.sbtPluginReleases
 
-addSbtPlugin("com.github.sbt" % "sbt-pgp" % "2.2.1")
+addSbtPlugin("com.github.sbt" % "sbt-pgp" % "2.3.2")
 
-addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.11.0")
+addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.12.2")
 
-addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.2")
+// dependencyTree is built into sbt; the obsolete external plugin is unnecessary.
 
-addSbtPlugin("pl.project13.scala" % "sbt-jmh" % "0.4.7")
+addSbtPlugin("pl.project13.scala" % "sbt-jmh" % "0.4.8")
