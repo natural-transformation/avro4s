@@ -78,6 +78,28 @@ class DependencyInventoryTest(unittest.TestCase):
                 jar.writestr("META-INF/MANIFEST.MF", "Bundle-Version: 2.12.21.v20251211-VFINAL\n")
             self.assertEqual(jar_modules(path), {("org.scala-lang:scala-library", "2.12.21")})
 
+    def test_scala_compiler_and_its_embedded_dependencies_are_both_identified(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "scala-compiler.jar"
+            with zipfile.ZipFile(path, "w") as jar:
+                jar.writestr("META-INF/MANIFEST.MF", "Bundle-Version: 2.12.21.v20251211-VFINAL\n")
+                jar.writestr("META-INF/maven/jline/jline/pom.properties",
+                             "groupId=jline\nartifactId=jline\nversion=2.14.6\n")
+            self.assertEqual(jar_modules(path), {("org.scala-lang:scala-compiler", "2.12.21"),
+                                                ("jline:jline", "2.14.6")})
+
+    def test_embedded_metadata_cannot_hide_an_unknown_outer_jar(self):
+        for manifest in (None, "Manifest-Version: 1.0\n"):
+            with tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / "unknown.jar"
+                with zipfile.ZipFile(path, "w") as jar:
+                    if manifest:
+                        jar.writestr("META-INF/MANIFEST.MF", manifest)
+                    jar.writestr("META-INF/maven/example.org/embedded/pom.properties",
+                                 "groupId=example.org\nartifactId=embedded\nversion=1.0\n")
+                with self.assertRaises(ValueError):
+                    jar_modules(path)
+
     def test_actual_classpath_must_be_inside_the_scanned_directory(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
