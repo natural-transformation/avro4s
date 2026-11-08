@@ -34,6 +34,7 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
           push: ${{ github.event_name != 'pull_request' && secrets.CACHIX_AUTH_TOKEN != '' }}
       - name: Test, smoke benchmarks and verify Java 21 bytecode
+        id: tests
         env:
           SBT_BOOT: ${{ runner.temp }}/sbt-boot
         run: nix develop .#java${{ matrix.java }} --command bash scripts/ci-validate.sh
@@ -41,7 +42,7 @@ jobs:
         if: ${{ !cancelled() }}
         env:
           SBT_BOOT: ${{ runner.temp }}/sbt-boot
-        run: nix develop .#java${{ matrix.java }} --command bash scripts/dependency-audit.sh
+        run: nix develop .#java${{ matrix.java }} --command bash scripts/dependency-audit.sh ${{ steps.tests.outcome == 'success' && '--reuse-validation' || '' }}
       - name: Verify offline Nix build
         if: ${{ !cancelled() && matrix.java == '21' }}
         run: nix build

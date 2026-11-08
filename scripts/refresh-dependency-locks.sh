@@ -3,7 +3,6 @@ set -euo pipefail
 
 # Run inside the repository's java21 Nix shell. sbtix's bundled bootstrap lock
 # targets its own sbt version, so resolve this project's sbt runtime explicitly.
-repo_root="$PWD"
 sbtix-gen
 bootstrap_dir="$(mktemp -d)"
 trap 'rm -rf "$bootstrap_dir"' EXIT

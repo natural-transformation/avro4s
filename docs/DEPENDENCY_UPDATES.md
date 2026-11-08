@@ -104,6 +104,8 @@ retain the exact inventories, scan output, classpath provenance and JUnit report
 A separate comparison workflow measures schema derivation against the test-only
 baseline `0df287d8` on each JDK; timings on shared runners are evidence for this
 fixture, not a pass/fail performance threshold or a Java 21-versus-25 comparison.
+[The recorded comparison](../benchmarks/results/pr17-schema-derivation/README.md)
+includes raw results and the failing-before/passing-after test evidence.
 
 Java 21 additionally builds offline and exercises `publishSigned` against an
 isolated local Maven repository with an ephemeral GPG key. All library JARs,
@@ -187,6 +189,8 @@ nix build
 Review and commit every changed lock imported by `default.nix`, including the
 nested build-plugin locks. The dependency-lock refresh workflow produces a patch
 artifact for review; it does not commit or publish changes automatically.
+[The review verification run](https://github.com/natural-transformation/avro4s/actions/runs/42480019042)
+regenerated the committed locks without any diff.
 The refresh script resolves sbt itself in a temporary project and writes only
 the selected compile JARs and their hashes into `nix/sbt-bootstrap.json`. It reads
 sbtix's output using Nix evaluation, without rewriting generated Nix text. Missing

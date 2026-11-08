@@ -2,9 +2,6 @@ name: Refresh dependency locks
 
 on:
   workflow_dispatch:
-  push:
-    branches: [maintenance/dependencies-java21-java25]
-    paths: [nix/sbt-bootstrap.sbt, scripts/refresh-dependency-locks.sh]
 
 permissions:
   contents: read

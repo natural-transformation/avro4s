@@ -7,9 +7,6 @@ on:
         description: Commit containing the benchmark before the schema fix
         default: '0df287d82ed1fd2c893c86ff503a0a626fae6275'
         required: true
-  push:
-    branches: [maintenance/dependencies-java21-java25]
-    paths: [.github/workflows/schema-benchmark-comparison.yml]
 
 permissions:
   contents: read

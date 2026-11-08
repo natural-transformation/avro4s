@@ -2,9 +2,14 @@
 set -euo pipefail
 : "${SBT_BOOT:?Set SBT_BOOT to a fresh writable directory outside target}"
 
-# Reuse the successful validation's reports. A failed build still gets an audit
-# through independent resolution; clean removes any stale classpath report.
-if [ ! -f target/dependency-audit/bootstrap-classpath.txt ]; then
+# Standalone audits always resolve afresh. Only CI, immediately after successful
+# clean validation in the same checkout, may explicitly reuse its reports.
+case "${1:-}" in
+  '') reuse_validation=false ;;
+  --reuse-validation) reuse_validation=true ;;
+  *) echo 'Usage: dependency-audit.sh [--reuse-validation]' >&2; exit 2 ;;
+esac
+if [ "$reuse_validation" = false ]; then
   sbt -batch -Dsbt.server.autostart=false update 'benchmarks/update' exportBootstrapClasspath
 fi
 python3 -m unittest discover -s scripts -p 'test_*.py'
