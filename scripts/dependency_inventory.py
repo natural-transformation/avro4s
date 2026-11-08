@@ -44,6 +44,29 @@ def resolved_modules(report):
     return found
 
 
+def resolved_jar_urls(report):
+    """Select the bootstrap classpath, excluding metadata-only and test artifacts."""
+    urls = set()
+    for configuration in report["configurations"]:
+        if configuration["configuration"]["name"] != "compile":
+            continue
+        for entry in configuration["modules"]:
+            if entry["evicted"]:
+                continue
+            if entry["missingArtifacts"]:
+                raise ValueError("Unresolved bootstrap module: " + str(entry["module"]))
+            module = entry["module"]
+            for artifact, _ in entry["artifacts"]:
+                if artifact.get("extension") != "jar" or artifact.get("classifier"):
+                    continue
+                prefix = "/".join([module["organization"].replace(".", "/"), module["name"], module["revision"]])
+                filename = artifact["name"] + "-" + module["revision"] + ".jar"
+                urls.add("https://repo1.maven.org/maven2/" + prefix + "/" + filename)
+    if not urls:
+        raise ValueError("Empty resolved bootstrap compile classpath")
+    return urls
+
+
 def jar_modules(path):
     with zipfile.ZipFile(path) as jar:
         properties = [name for name in jar.namelist()

@@ -2,7 +2,7 @@ from pathlib import Path
 import tempfile
 import unittest
 import zipfile
-from dependency_inventory import check_bootstrap_classpath, collect, jar_modules, resolved_modules
+from dependency_inventory import check_bootstrap_classpath, collect, jar_modules, resolved_modules, resolved_jar_urls
 
 
 class DependencyInventoryTest(unittest.TestCase):
@@ -16,6 +16,17 @@ class DependencyInventoryTest(unittest.TestCase):
     def test_evicted_versions_are_excluded_but_selected_test_dependencies_remain(self):
         report = self.report(self.module(version="0.9", evicted=True), self.module(), self.module("test-library"))
         self.assertEqual(resolved_modules(report), {("example.org:library", "1.0"), ("example.org:test-library", "1.0")})
+
+    def test_bootstrap_selects_only_resolved_compile_jars(self):
+        normal = {"name": "library", "extension": "jar"}
+        jar = self.module(artifacts=[[normal, "file:///library-1.0.jar"],
+                                    [dict(normal, classifier="tests"), "file:///library-1.0-tests.jar"]])
+        report = {"configurations": [
+            {"configuration": {"name": "compile"}, "modules": [jar, self.module(version="0.9", evicted=True)]},
+            {"configuration": {"name": "test"}, "modules": [self.module("test-only")]}
+        ]}
+        self.assertEqual(resolved_jar_urls(report),
+                         {"https://repo1.maven.org/maven2/example/org/library/1.0/library-1.0.jar"})
 
     def test_sbt_plugin_uses_real_maven_coordinates(self):
         module = self.module("sbt-plugin")

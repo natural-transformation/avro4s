@@ -19,12 +19,16 @@ jobs:
       - name: Refresh Nix packages
         run: nix flake update nixpkgs
       - name: Refresh resolved Maven locks through sbtix
-        run: nix develop .#java21 --command bash scripts/refresh-dependency-locks.sh
+        # Bootstrap the new classpath manifest with the last working Nix shell.
+        # Restore the local shell after the generated manifest is checked in.
+        run: nix develop github:natural-transformation/avro4s/99a71edb08c6668cbfb9bf826f889b6bfc1e179b#java21 --command bash scripts/refresh-dependency-locks.sh
       - name: Package lock changes for review
         if: always()
         run: |
           mkdir -p target/lock-refresh
-          git add --intent-to-add sbt-bootstrap-repo.nix
+          for file in sbt-bootstrap-repo.nix sbt-bootstrap-jars.json; do
+            if [ -f "$file" ]; then git add --intent-to-add "$file"; fi
+          done
           git diff --binary > target/lock-refresh/locks.patch
           git status --short > target/lock-refresh/status.txt
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
