@@ -12,6 +12,9 @@ trait FromRecord[T] extends Serializable {
 
 object FromRecord {
   def apply[T](schema: Schema)(using decoder: Decoder[T]): FromRecord[T] = new FromRecord[T] {
-    override def from(record: IndexedRecord): T = decoder.decode(schema).apply(record)
+    // Re-prepare after deserialization instead of serializing the cached function's state.
+    @transient private lazy val decode = decoder.decode(schema)
+
+    override def from(record: IndexedRecord): T = decode(record)
   }
 }

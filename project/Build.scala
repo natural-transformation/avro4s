@@ -14,8 +14,6 @@ object Build extends AutoPlugin {
     val Json4sVersion = "4.0.6"
     val CatsVersion = "2.10.0"
     val MagnoliaVersion = "1.3.20"
-    val SbtJmhVersion = "0.4.8"
-    val JmhVersion = "1.32"
   }
 
   import autoImport._

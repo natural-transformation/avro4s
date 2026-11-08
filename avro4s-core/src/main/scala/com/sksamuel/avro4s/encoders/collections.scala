@@ -3,6 +3,7 @@ package com.sksamuel.avro4s.encoders
 import com.sksamuel.avro4s.Encoder
 import org.apache.avro.Schema
 
+import scala.collection.immutable.ArraySeq
 import scala.jdk.CollectionConverters._
 import scala.reflect.ClassTag
 
@@ -20,7 +21,13 @@ trait CollectionEncoders:
     override def encode(schema: Schema): Array[T] => AnyRef = {
       require(schema.getType == Schema.Type.ARRAY)
       val elementEncoder = encoder.encode(schema.getElementType)
-      { t => t.map(elementEncoder.apply).toList.asJava }
+      { t =>
+        // Avoid a mapped empty array and its ArraySeq wrapper for empty inputs.
+        if (t.isEmpty) List.empty[AnyRef].asJava
+        // Array.map specializes element access for primitive arrays. Reuse its
+        // fresh result directly instead of adding an intermediate List.
+        else ArraySeq.unsafeWrapArray(t.map(elementEncoder)).asJava
+      }
     }
   }
 

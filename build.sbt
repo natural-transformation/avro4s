@@ -49,12 +49,6 @@ val benchmarks = project
   .enablePlugins(JmhPlugin)
   .settings(
     Test / fork := true,
-    publishArtifact := false,
-    libraryDependencies ++= Seq(
-      "pl.project13.scala" % "sbt-jmh-extras" % SbtJmhVersion,
-      "org.openjdk.jmh" % "jmh-core" % JmhVersion,
-      "org.openjdk.jmh" % "jmh-generator-asm" % JmhVersion,
-      "org.openjdk.jmh" % "jmh-generator-bytecode" % JmhVersion,
-      "org.openjdk.jmh" % "jmh-generator-reflection" % JmhVersion
-    )
+    // sbt-jmh supplies a consistent set of JMH runtime/generator dependencies.
+    publishArtifact := false
   )

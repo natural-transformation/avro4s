@@ -58,7 +58,14 @@ class MapDecoder[T](decoder: Decoder[T]) extends Decoder[Map[String, T]] :
     val decode = decoder.decode(schema.getValueType)
     { value =>
       value match {
-        case map: java.util.Map[_, _] => map.asScala.toMap.map { case (k, v) => k.toString -> decode(v) }
+        case map: java.util.Map[_, _] =>
+          val builder = Map.newBuilder[String, T]
+          val entries = map.entrySet().iterator()
+          while (entries.hasNext) {
+            val entry = entries.next()
+            builder += entry.getKey.toString -> decode(entry.getValue)
+          }
+          builder.result()
       }
     }
   }
