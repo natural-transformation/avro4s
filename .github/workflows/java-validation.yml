@@ -1,0 +1,60 @@
+name: Java compatibility and dependency audit
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        default: ''
+    secrets:
+      CACHIX_AUTH_TOKEN:
+        required: false
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Java ${{ matrix.java }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        java: ['21', '25']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31.11.3
+      - uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
+        with:
+          name: avro4s
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          push: ${{ github.event_name != 'pull_request' && secrets.CACHIX_AUTH_TOKEN != '' }}
+      - name: Test, smoke benchmarks and verify Java 21 bytecode
+        id: tests
+        env:
+          SBT_BOOT: ${{ runner.temp }}/sbt-boot
+        run: nix develop .#java${{ matrix.java }} --command bash scripts/ci-validate.sh
+      - name: Audit resolved runtime, test, benchmark and build dependencies
+        if: ${{ !cancelled() }}
+        env:
+          SBT_BOOT: ${{ runner.temp }}/sbt-boot
+        run: nix develop .#java${{ matrix.java }} --command bash scripts/dependency-audit.sh ${{ steps.tests.outcome == 'success' && '--reuse-validation' || '' }}
+      - name: Verify offline Nix build
+        if: ${{ !cancelled() && matrix.java == '21' }}
+        run: nix build
+      - name: Exercise signed publishing to an isolated local repository
+        if: ${{ !cancelled() && matrix.java == '21' }}
+        env:
+          SBT_BOOT: ${{ runner.temp }}/sbt-boot
+        run: nix develop .#java21 --command bash scripts/publish-smoke.sh
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: java-${{ matrix.java }}-validation
+          path: |
+            target/dependency-audit/
+            **/target/test-reports/

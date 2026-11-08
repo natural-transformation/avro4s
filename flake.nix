@@ -17,20 +17,44 @@
       systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
       perSystem = { config, self', inputs', pkgs, system, ... }: 
       let
-        jdk21-overlay = self: super: {
-          jdk = super.jdk21;
-          jre = super.jdk21;
-          sbt = super.sbt.override { jre = super.jdk21; };
-        };
-        newPkgs = import nixpkgs {
+        javaPkgs = version: import nixpkgs {
           inherit system;
-          overlays = [ jdk21-overlay ];
+          overlays = [ (self: super: let
+            jdk = if version == "21" then import ./nix/jdk21.nix { pkgs = super; }
+              else super."jdk${version}";
+          in {
+            inherit jdk;
+            jre = jdk;
+            sbt = import ./nix/sbt.nix {
+              pkgs = super;
+              jre = jdk;
+            };
+          }) ];
         };
-        libPath = nixpkgs.lib.makeLibraryPath [ newPkgs.lmdb ];
+        newPkgs = javaPkgs "21";
         # Import the sbtix.nix file directly, not the flake's default.nix (which is a stub)
-        sbtixPkg = newPkgs.callPackage "${sbtix}/plugin/nix-exprs/sbtix.nix" {};
+        sbtixPkg = newPkgs.callPackage "${sbtix}/plugin/nix-exprs/sbtix.nix" {
+          # sbtix 1.2.8 uses the old fold alias, removed by current nixpkgs.
+          lib = newPkgs.lib // { fold = newPkgs.lib.foldr; };
+        };
         # Get the sbtix CLI tool from the flake for devShell
         sbtixCli = inputs'.sbtix.packages.sbtix;
+        javaShell = version: let
+          tools = javaPkgs version;
+          managedSbtix = import ./nix/sbtix.nix {
+            pkgs = tools;
+            original = sbtixCli;
+            originalSbt = sbtix.inputs.nixpkgs.legacyPackages.${system}.sbt;
+            sbt = tools.sbt;
+          };
+        in tools.mkShell {
+          nativeBuildInputs = [ tools.sbt managedSbtix tools.jdk tools.python3 tools.osv-scanner tools.gnupg ];
+          JAVA_HOME = "${tools.jdk}";
+          AVRO4S_SBT_BOOT_SOURCE = "${tools.sbt.bootstrap}";
+          AVRO4S_SBT_LAUNCH_JAR = tools.sbt.launcher;
+          # Set NIX_PATH so nix-build in build.sh uses the same packages as nix build.
+          NIX_PATH = "nixpkgs=${inputs.nixpkgs}";
+        };
       in {
         # Make packages.default lazy - wrap in a function that's only called when needed
         # This prevents it from being evaluated when only devShells is needed
@@ -40,15 +64,10 @@
           sbtix = sbtixPkg;
         });
 
-        devShells.default = newPkgs.mkShell {
-          nativeBuildInputs = with newPkgs; [
-            sbt
-            sbtixCli
-            jdk
-          ];
-          # environment variables go here:
-          # Set NIX_PATH to make sure the nix-build in `build.sh` produce the same results as `nix build`
-          NIX_PATH = "nixpkgs=${inputs.nixpkgs}"; 
+        devShells = {
+          default = javaShell "21";
+          java21 = javaShell "21";
+          java25 = javaShell "25";
         };
       };
      

@@ -23,6 +23,10 @@ case class AvroDataOutputStream[T](schema: Schema,
                                    codec: CodecFactory)
                                   (using encoder: Encoder[T]) extends AvroOutputStream[T] {
 
+  // Validate the completed graph, including explicit/custom schemas, before the
+  // container header serializes it. Binary-only streams retain their raw graph.
+  avroutils.SchemaHelper.validateNames(schema)
+
   val (writer, writeFn) = schema.getType match {
     case Schema.Type.BOOLEAN | Schema.Type.INT | Schema.Type.LONG | Schema.Type.FLOAT | Schema.Type.DOUBLE | Schema.Type.STRING =>
       val datumWriter = new GenericDatumWriter[T](schema)

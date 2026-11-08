@@ -40,10 +40,27 @@ class GenericSchemaTest extends AnyFunSuite with Matchers {
 
   test("throw error if different type parameters are disabled by @AvroErasedName") {
     intercept[SchemaParseException] {
-      val schema = AvroSchema[SameGenericWithDifferentTypeArgsDisabled]
-      val expected = new org.apache.avro.Schema.Parser().parse(getClass.getResourceAsStream("/generic.json"))
-      schema.toString(true) shouldBe expected.toString(true)
+      AvroSchema[SameGenericWithDifferentTypeArgsDisabled]
     }
+  }
+
+  test("allow repeated erased names when their definitions agree") {
+    case class Repeated(first: GenericDisabled[Int], second: GenericDisabled[Int])
+    val schema = AvroSchema[Repeated]
+    new org.apache.avro.Schema.Parser().parse(schema.toString) shouldBe schema
+  }
+
+  test("reject conflicting erased names nested in arrays and maps") {
+    case class ConflictingNested(first: List[GenericDisabled[Int]], second: Map[String, GenericDisabled[String]])
+    intercept[SchemaParseException] {
+      AvroSchema[ConflictingNested]
+    }
+  }
+
+  test("named schema validation terminates for recursive references") {
+    val schema = new org.apache.avro.Schema.Parser().parse(
+      """{"type":"record","name":"Node","fields":[{"name":"next","type":["null","Node"]}]}""")
+    com.sksamuel.avro4s.avroutils.SchemaHelper.validateNames(schema)
   }
 
   test("support top level generic") {

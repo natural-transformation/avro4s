@@ -39,7 +39,7 @@ val `avro4s-kafka` = project.in(file("avro4s-kafka"))
   .dependsOn(`avro4s-core`)
   .settings(
     libraryDependencies ++= Seq(
-      "org.apache.kafka" % "kafka-clients" % "2.4.0"
+      "org.apache.kafka" % "kafka-clients" % KafkaVersion
     )
   )
 
@@ -49,6 +49,8 @@ val benchmarks = project
   .enablePlugins(JmhPlugin)
   .settings(
     Test / fork := true,
+    // The schema benchmark derives a six-level graph at each invocation.
+    Compile / scalacOptions += "-Xmax-inlines:256",
     // sbt-jmh supplies a consistent set of JMH runtime/generator dependencies.
     publishArtifact := false
   )

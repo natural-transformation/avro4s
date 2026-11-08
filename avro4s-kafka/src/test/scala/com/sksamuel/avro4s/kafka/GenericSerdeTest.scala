@@ -5,10 +5,17 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 case class TheKafkaValue(name: String, location: String)
+case class HeterogeneousTuples(first: (Int, String), second: (String, Int))
 
 class GenericSerdeTest extends AnyFlatSpec with Matchers {
 
   val someValue = TheKafkaValue("the name", "the location")
+
+  "binary serde with heterogeneous tuples" should "retain its binary-only schema contract" in {
+    val serde = new GenericSerde[HeterogeneousTuples]()
+    val value = HeterogeneousTuples((1, "one"), ("two", 2))
+    serde.deserialize("topic", serde.serialize("topic", value)) shouldBe value
+  }
 
   "serialization with default binary avro format" should " be identical to binary format" in  {
     val defaultSerde = new GenericSerde[TheKafkaValue]()

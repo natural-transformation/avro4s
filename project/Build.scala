@@ -8,12 +8,17 @@ object Build extends AutoPlugin {
 
   object autoImport {
     val org = "com.natural-transformation"
-    val AvroVersion = "1.11.5"
-    val ScalatestVersion = "3.2.17"
-    val Slf4jVersion = "2.0.18"
-    val Json4sVersion = "4.0.6"
-    val CatsVersion = "2.10.0"
-    val MagnoliaVersion = "1.3.20"
+    val AvroVersion = "1.12.2"
+    val ScalatestVersion = "3.2.20"
+    val Slf4jVersion = "2.0.20"
+    val Json4sVersion = "4.0.7"
+    val CatsVersion = "2.13.0"
+    val MagnoliaVersion = "1.3.24"
+    val KafkaVersion = "4.3.2"
+    // Keep >= AvroVersion's Jackson BOM (1.12.2 uses 2.22.1). Recheck when Avro
+    // changes: Maven's nearest-wins resolution can otherwise retain an older pin.
+    val JacksonVersion = "2.22.4"
+    val exportBootstrapClasspath = taskKey[File]("Record the sbt launcher's actual bootstrap classpath for the security audit")
   }
 
   import autoImport._
@@ -60,16 +65,44 @@ object Build extends AutoPlugin {
   override def projectSettings = commonSettings ++ publishingSettings 
   
   val commonSettings = Seq(
+    exportBootstrapClasspath / aggregate := false,
+    exportBootstrapClasspath := {
+      val provider = appConfiguration.value.provider
+      val jars = (provider.mainClasspath.toSeq ++ provider.scalaProvider.jars.toSeq).distinct
+      val output = (LocalRootProject / baseDirectory).value / "target" / "dependency-audit" / "bootstrap-classpath.txt"
+      IO.writeLines(output, jars.map(_.getAbsolutePath))
+      // sbt wraps provider.scalaProvider.launcher in a proxy from main_2.12.
+      // Inspect the JVM's actual launcher entry point, not that application proxy.
+      val launcherMain = ClassLoader.getSystemClassLoader.loadClass("xsbt.boot.Boot")
+      val launcher = new File(launcherMain.getProtectionDomain.getCodeSource.getLocation.toURI)
+      IO.write(output.getParentFile / "launcher-path.txt", launcher.getAbsolutePath + "\n")
+      output
+    },
     organization       := org,
-    scalaVersion := "3.3.7",
+    scalaVersion := "3.3.9",
     // For reproducible builds, we avoid `mavenLocal` unless explicitly enabled.
     // Set AVRO4S_USE_MAVEN_LOCAL=1 to opt in.
     resolvers ++= (if (useMavenLocalResolver) Seq(Resolver.mavenLocal) else Nil),
     Test / parallelExecution := false,
     Test / scalacOptions ++= Seq("-Xmax-inlines:100", "-Yretain-trees"),
-    javacOptions := Seq("-source", "21", "-target", "21"),    
+    // Keep both bytecode and JDK API usage compatible with Java 21 when built on 25.
+    scalacOptions += "-release:21",
+    javacOptions := Seq("--release", "21"),
+    // These also patch the separate compiler/Scaladoc configurations. Keep until
+    // an upstream Scala update resolves safe versions; they are audited in CI.
+    dependencyOverrides ++= Seq(
+      "com.fasterxml.jackson.core" % "jackson-core" % JacksonVersion,
+      "com.fasterxml.jackson.core" % "jackson-databind" % JacksonVersion,
+      "com.fasterxml.jackson.core" % "jackson-annotations" % "2.22",
+      "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % JacksonVersion,
+      "org.jsoup" % "jsoup" % "1.24.1"
+    ) ++ Seq("jline-reader", "jline-terminal", "jline-terminal-jni", "jline-native")
+      .map("org.jline" % _ % "3.30.15"),
     libraryDependencies ++= Seq(
       "org.apache.avro"   % "avro"              % AvroVersion,
+      // Publish patched Jackson requirements so downstream Maven users inherit them.
+      "com.fasterxml.jackson.core" % "jackson-core" % JacksonVersion,
+      "com.fasterxml.jackson.core" % "jackson-databind" % JacksonVersion,
       // Provide a no-op SLF4J provider in tests to avoid "No SLF4J providers were found" warnings.
       "org.slf4j"         % "slf4j-api"         % Slf4jVersion          % Test,
       "org.slf4j"         % "slf4j-nop"         % Slf4jVersion          % Test,

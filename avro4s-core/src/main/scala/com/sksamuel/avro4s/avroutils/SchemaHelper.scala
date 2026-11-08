@@ -11,6 +11,36 @@ object SchemaHelper {
 
   import scala.collection.JavaConverters._
 
+  // Avro 1.12 serialization can emit a name reference without rejecting a
+  // conflicting definition. Export/container boundaries validate the complete
+  // graph once. As in Avro 1.11, equivalence uses Schema.equals (not metadata
+  // identity: e.g. doc/alias differences do not make definitions unequal).
+  private[avro4s] def validateNames(root: Schema): Unit = {
+    val seen = new java.util.IdentityHashMap[Schema, java.lang.Boolean]()
+    val names = new java.util.HashMap[String, Schema]()
+    val pending = new java.util.ArrayDeque[Schema]()
+    pending.add(root)
+    while (!pending.isEmpty) {
+      val schema = pending.removeFirst()
+      if (seen.put(schema, java.lang.Boolean.TRUE) == null) {
+        schema.getType match {
+          case Schema.Type.RECORD | Schema.Type.ENUM | Schema.Type.FIXED =>
+            val previous = names.putIfAbsent(schema.getFullName, schema)
+            if (previous != null && previous != schema)
+              throw new org.apache.avro.SchemaParseException("Can't redefine: " + schema.getFullName)
+          case _ =>
+        }
+        schema.getType match {
+          case Schema.Type.RECORD => schema.getFields.asScala.foreach(field => pending.add(field.schema()))
+          case Schema.Type.ARRAY => pending.add(schema.getElementType)
+          case Schema.Type.MAP => pending.add(schema.getValueType)
+          case Schema.Type.UNION => schema.getTypes.asScala.foreach(pending.add)
+          case _ =>
+        }
+      }
+    }
+  }
+
   def matchPrimitiveName(fullName: String): Option[Schema] = fullName match {
     case "java.lang.Integer" => Some(Schema.create(Schema.Type.INT))
     case "java.lang.String" => Some(Schema.create(Schema.Type.STRING))
