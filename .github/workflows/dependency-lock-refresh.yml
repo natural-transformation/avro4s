@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [maintenance/dependencies-java21-java25]
-    paths: ['flake.nix', 'flake.lock', 'project/**', 'build.sbt', 'default.nix', 'scripts/refresh-dependency-locks.sh']
+    paths: ['flake.nix', 'flake.lock', 'project/**', 'build.sbt', 'default.nix', 'nix/**', 'scripts/refresh-dependency-locks.sh']
 
 permissions:
   contents: read

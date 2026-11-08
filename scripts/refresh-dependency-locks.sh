@@ -9,10 +9,7 @@ bootstrap_dir="$(mktemp -d)"
 trap 'rm -rf "$bootstrap_dir"' EXIT
 mkdir -p "$bootstrap_dir/project"
 cp project/build.properties "$bootstrap_dir/project/build.properties"
-cat > "$bootstrap_dir/build.sbt" <<'SBT'
-scalaVersion := "2.12.21"
-libraryDependencies += "org.scala-sbt" % "sbt" % sbtVersion.value
-SBT
+cp nix/sbt-bootstrap.sbt "$bootstrap_dir/build.sbt"
 (
   cd "$bootstrap_dir"
   sbtix-gen

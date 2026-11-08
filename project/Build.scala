@@ -15,6 +15,7 @@ object Build extends AutoPlugin {
     val CatsVersion = "2.13.0"
     val MagnoliaVersion = "1.3.24"
     val KafkaVersion = "4.3.2"
+    val JacksonVersion = "2.22.4"
   }
 
   import autoImport._
@@ -71,8 +72,20 @@ object Build extends AutoPlugin {
     // Keep both bytecode and JDK API usage compatible with Java 21 when built on 25.
     scalacOptions += "-release:21",
     javacOptions := Seq("--release", "21"),
+    // Compiler / Scaladoc tools are resolved in separate configurations.
+    dependencyOverrides ++= Seq(
+      "com.fasterxml.jackson.core" % "jackson-core" % JacksonVersion,
+      "com.fasterxml.jackson.core" % "jackson-databind" % JacksonVersion,
+      "com.fasterxml.jackson.core" % "jackson-annotations" % "2.22",
+      "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % JacksonVersion,
+      "org.jsoup" % "jsoup" % "1.24.1"
+    ) ++ Seq("jline-reader", "jline-terminal", "jline-terminal-jni", "jline-native")
+      .map("org.jline" % _ % "3.30.15"),
     libraryDependencies ++= Seq(
       "org.apache.avro"   % "avro"              % AvroVersion,
+      // Publish patched Jackson requirements so downstream Maven users inherit them.
+      "com.fasterxml.jackson.core" % "jackson-core" % JacksonVersion,
+      "com.fasterxml.jackson.core" % "jackson-databind" % JacksonVersion,
       // Provide a no-op SLF4J provider in tests to avoid "No SLF4J providers were found" warnings.
       "org.slf4j"         % "slf4j-api"         % Slf4jVersion          % Test,
       "org.slf4j"         % "slf4j-nop"         % Slf4jVersion          % Test,
