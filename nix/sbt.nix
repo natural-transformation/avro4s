@@ -48,9 +48,7 @@ in pkgs.symlinkJoin {
     makeWrapper ${runner}/bin/sbt "$out/bin/sbt" \
       --run 'boot_root="''${SBT_BOOT:-''${XDG_CACHE_HOME:-$HOME/.cache}/avro4s/sbt-boot}"' \
       --run 'boot_dir="$(${pkgs.python3}/bin/python3 ${../scripts/prepare_sbt_boot.py} ${boot} "$boot_root")"' \
-      --run 'read -r -a supplied_options <<< "''${SBT_OPTS:-}"' \
-      --run 'managed_options=(); for option in "''${supplied_options[@]}"; do case "$option" in -Dsbt.boot.directory=*|-J-Dsbt.boot.directory=*) ;; *) managed_options+=("$option");; esac; done' \
-      --run 'export SBT_OPTS="''${managed_options[*]}"' \
+      --run 'export SBT_OPTS="$(${pkgs.runtimeShell} ${../scripts/filter_sbt_options.sh})"' \
       --append-flags '-Dsbt.boot.directory="$boot_dir"'
   '';
 }
