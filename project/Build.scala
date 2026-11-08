@@ -71,7 +71,10 @@ object Build extends AutoPlugin {
       val jars = (provider.mainClasspath.toSeq ++ provider.scalaProvider.jars.toSeq).distinct
       val output = (LocalRootProject / baseDirectory).value / "target" / "dependency-audit" / "bootstrap-classpath.txt"
       IO.writeLines(output, jars.map(_.getAbsolutePath))
-      val launcher = new File(provider.scalaProvider.launcher.getClass.getProtectionDomain.getCodeSource.getLocation.toURI)
+      // sbt wraps provider.scalaProvider.launcher in a proxy from main_2.12.
+      // Inspect the JVM's actual launcher entry point, not that application proxy.
+      val launcherMain = ClassLoader.getSystemClassLoader.loadClass("xsbt.boot.Boot")
+      val launcher = new File(launcherMain.getProtectionDomain.getCodeSource.getLocation.toURI)
       IO.write(output.getParentFile / "launcher-path.txt", launcher.getAbsolutePath + "\n")
       output
     },
